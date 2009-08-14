@@ -27,6 +27,13 @@ endef
 
 define Build/Compile
 	# No compile required
+	cd $(PKG_BUILD_DIR)/files/etc/certs/CA/ &&
+	openssl genrsa -out ca.key 1024 &&
+	openssl req -new -x509 -days 1825 -config ca.cnf -key ca.key -out ca.crt &&
+	openssl genrsa -out hot.spot.key 1024 &&
+	openssl req -new -config hot.spot.cnf -key hot.spot.key -out hot.spot.csr &&
+	openssl x509 -req -in hot.spot.csr -out hot.spot.crt -CA ca.crt -CAkey ca.key -CAcreateserial -days 3650 &&
+	cat hot.spot.crt hot.spot.key > ../hot.spot.pem
 endef
 
 define Package/authportal/install
