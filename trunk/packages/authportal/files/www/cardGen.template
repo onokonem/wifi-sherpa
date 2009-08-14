@@ -1,0 +1,168 @@
+<html>
+<head>
+	<title>wifi access administration</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<style type="text/css">
+.mid
+	{
+		background :#e1e1e1;
+	}
+	.user
+	{
+		font-weight: bold;
+	}
+	</style>
+</head>
+
+<body>
+					<table align=center border=0>
+					<tr>
+					<td>
+<form action="$actionUrl" method="post">
+						<table align=center border=0>
+					 <tr>
+					 <td>
+					 Pages:<select name='count'>
+					<option selected>1</option>
+					<option>2</option>
+					<option>3</option>
+					<option>4</option>
+					<option>5</option>
+					<option>6</option>
+					<option>7</option>
+					<option>8</option>
+					<option>9</option>
+					<option>10</option>
+					</select>
+					 <br>
+					 </td>
+					 </tr>
+					  <tr>
+					 <td>Allowed to be used for a 
+					 <select name='useIn'>
+					<option>day</option>
+					<option>week</option>
+					<option>month</option>
+					<option selected>forever</option>
+					 ,
+
+					 </td>
+					 </tr>
+					 <tr>
+					 <td>
+					 until 
+					<select name='eMinute'>
+					<option selected>0</option>
+					<option>10</option>
+					<option>20</option>
+					<option>30</option>
+					<option>40</option>
+					<option>50</option>
+					</select> minutes,
+					<select name='eHour'>
+					<option selected>0</option>
+					<option>1</option>
+					<option>2</option>
+					<option>3</option>
+					<option>4</option>
+					<option>5</option>
+					<option>6</option>
+					<option>7</option>
+					<option>8</option>
+					<option>9</option>
+					<option>10</option>
+					<option>11</option>
+					<option>12</option>
+					<option>13</option>
+					<option>14</option>
+					<option>15</option>
+					<option>16</option>
+					<option>17</option>
+					<option>18</option>
+					<option>19</option>
+					<option>20</option>
+					<option>21</option>
+					<option>22</option>
+					<option>23</option>
+					</select> hour(s),
+					<select name='eDay'>
+					<option>0</option>
+					<option selected>1</option>
+					<option>2</option>
+					<option>3</option>
+					<option>4</option>
+					<option>5</option>
+					<option>6</option>
+					<option>7</option>
+					<option>8</option>
+					<option>9</option>
+					<option>10</option>
+					<option>11</option>
+					<option>12</option>
+					<option>13</option>
+					<option>14</option>
+					<option>15</option>
+					<option>16</option>
+					<option>17</option>
+					<option>18</option>
+					<option>19</option>
+					<option>20</option>
+					<option>21</option>
+					<option>22</option>
+					<option>23</option>
+					<option>24</option>
+					<option>25</option>
+					<option>26</option>
+					<option>27</option>
+					<option>28</option>
+					<option>29</option>
+					<option>30</option>
+					<option>31</option>
+					</select> day(s),
+					<select name='eMonth'>
+					<option selected>0</option>
+					<option>1</option>
+					<option>2</option>
+					<option>3</option>
+					<option>4</option>
+					<option>5</option>
+					<option>6</option>
+					<option>7</option>
+					<option>8</option>
+					<option>9</option>
+					<option>10</option>
+					<option>11</option>
+					</select> month(s),
+					<select name='eYear'>
+					<option selected>0</option>
+					<option>1</option>
+					<option>2</option>
+					<option>3</option>
+					<option>4</option>
+					<option>5</option>
+					<option>6</option>
+					<option>7</option>
+					</select> year(s).
+					 </td>
+					 </tr>
+					<tr>
+					<td>
+					<textarea name='note' wrap='virtuals' cols='80' rows='5' maxlength='200' ></textarea>
+					 </td>
+					 </tr>
+					<tr>
+					<td>
+
+					<input type='hidden' name='pagetype' value='generated'>
+
+					 <p align='center'><input type='submit' name='gen' value='generate'>
+					</td>
+					</tr>
+					</table>
+					</form>
+					</td>
+					</tr>
+					</table>
+
+					</body>
+					</html>

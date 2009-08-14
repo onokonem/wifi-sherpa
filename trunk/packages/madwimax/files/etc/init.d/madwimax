@@ -1,0 +1,13 @@
+#!/bin/sh /etc/rc.common
+
+START=40
+
+start() {
+        /usr/sbin/madwimax -vvfd
+}
+
+stop() {
+        /usr/bin/killall madwimax
+        /bin/sleep 3
+        return 0
+}

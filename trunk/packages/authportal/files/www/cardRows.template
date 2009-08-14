@@ -1,0 +1,13 @@
+		<tr valign="top">
+			<td width='40%' nowrap>
+
+				$card
+
+			</td>
+			<td width='40%' nowrap>
+	
+
+				$card	
+	
+			</td>
+		</tr>

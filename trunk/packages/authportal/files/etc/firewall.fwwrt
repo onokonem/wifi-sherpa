@@ -1,0 +1,146 @@
+internalAddr="`uci get network.lan.ipaddr`"              || exit 1
+internalMask="`uci get network.lan.netmask`"             || exit 1
+eval `ipcalc.sh $internalAddr $internalMask`             || exit 1
+addrRange="$NETWORK/$PREFIX"
+
+# UCI RETURNS AN INCORRECT INFO, SO IFACE NAME IS HARDCODED
+# internalIface="`  uci get network.lan.ifname`"           || exit 1
+internalIface="br-lan"
+
+externalIface="`  uci get network.wan.ifname`"           || exit 1
+externalAdmin="`  uci get fwwrt.firewall.externalAdmin`" || exit 1
+squidEnabled="`   uci get fwwrt.firewall.squidEnabled`"  || exit 1
+unauthHttpPort="` uci get fwwrt.ports.unauth`"           || exit 1
+unauthHttpsPort="`uci get fwwrt.ports.unauthSSL`"        || exit 1
+unauthDnsPort="`  uci get fwwrt.ports.unauthDNS`"        || exit 1
+authHttpPort="`   uci get fwwrt.ports.auth`"             || exit 1
+authHttpsPort="`  uci get fwwrt.ports.authSSL`"          || exit 1
+squidPort="`      uci get fwwrt.ports.squid`"            || exit 1
+sshPort="`        uci get fwwrt.ports.ssh`"              || exit 1
+verbose="`        uci get fwwrt.log.verbose`"            || exit 1
+IPTABLES="`       uci get fwwrt.firewall.iptables`"      || exit 1
+
+
+$IPTABLES -t nat -N authorized_INPUT
+test "$verbose" == "true" &&
+$IPTABLES -t nat -A authorized_INPUT -j LOG --log-level debug --log-prefix 'authorized_INPUT '
+#
+$IPTABLES -t nat -A authorized_INPUT -p tcp -m tcp --dport                 80 -j DNAT --to-destination "$internalAddr":"$authHttpPort"
+$IPTABLES -t nat -A authorized_INPUT -p tcp -m tcp --dport                443 -j DNAT --to-destination "$internalAddr":"$authHttpsPort"
+$IPTABLES -t nat -A authorized_INPUT -p tcp -m tcp --dport "$unauthHttpPort"  -j DNAT --to-destination "$internalAddr":"$authHttpPort"
+$IPTABLES -t nat -A authorized_INPUT -p tcp -m tcp --dport "$unauthHttpsPort" -j DNAT --to-destination "$internalAddr":"$authHttpsPort"
+
+
+$IPTABLES -t nat -N authorized_PREROUTING
+test "$verbose" == "true" &&
+$IPTABLES -t nat -A authorized_PREROUTING -j LOG --log-level debug --log-prefix 'authorized_PREROUTING '
+#
+#$IPTABLES -t nat -A authorized_PREROUTING -m addrtype -dst-type LOCAL -j authorized_INPUT
+$IPTABLES -t nat -A authorized_PREROUTING -d "$internalAddr" -j authorized_INPUT
+#$IPTABLES -t nat -A authorized_PREROUTING -d "$externalAddr" -j authorized_INPUT
+#
+test "$squidEnabled" == "YES" &&  
+$IPTABLES -t nat -A authorized_PREROUTING -p tcp -m tcp --dport 80 -j DNAT --to-destination "$internalAddr":"$squidPort"
+$IPTABLES -t nat -A authorized_PREROUTING -j ACCEPT
+
+
+$IPTABLES -t nat -N unauthorized_INPUT
+test "$verbose" == "true" &&
+$IPTABLES -t nat -A unauthorized_INPUT -j LOG --log-level debug --log-prefix 'unauthorized_INPUT '
+#
+$IPTABLES -t nat -A unauthorized_INPUT -p tcp -m tcp --dport              443 -j DNAT --to-destination "$internalAddr":"$unauthHttpsPort"
+$IPTABLES -t nat -A unauthorized_INPUT -p tcp -m tcp --dport "$authHttpPort"  -j DNAT --to-destination "$internalAddr":"$unauthHttpPort"
+$IPTABLES -t nat -A unauthorized_INPUT -p tcp -m tcp --dport "$authHttpsPort" -j DNAT --to-destination "$internalAddr":"$unauthHttpsPort"
+
+
+$IPTABLES -t nat -N unauthorized_PREROUTING
+test "$verbose" == "true" &&
+$IPTABLES -t nat -A unauthorized_PREROUTING -j LOG --log-level debug --log-prefix 'unauthorized_PREROUTING '
+#
+$IPTABLES -t nat -A unauthorized_PREROUTING -d "$internalAddr" -j unauthorized_INPUT
+#$IPTABLES -t nat -A unauthorized_PREROUTING -d "$externalAddr" -j unauthorized_INPUT
+#
+$IPTABLES -t nat -A unauthorized_PREROUTING  -p tcp -m tcp --dport           80 -j DNAT --to-destination "$internalAddr":"$unauthHttpPort"
+$IPTABLES -t nat -A unauthorized_PREROUTING  -p tcp -m tcp --dport "$squidPort" -j DNAT --to-destination "$internalAddr":"$unauthHttpPort"
+#$IPTABLES -t nat -A unauthorized_PREROUTING  -p tcp -m tcp --dport           53 -j DNAT --to-destination "$internalAddr":"$unauthDnsPort"
+#$IPTABLES -t nat -A unauthorized_PREROUTING  -p udp -m udp --dport           53 -j DNAT --to-destination "$internalAddr":"$unauthDnsPort"
+$IPTABLES -t nat -A unauthorized_PREROUTING  -p tcp -m tcp --dport           53 -j DNAT --to-destination "$internalAddr"
+$IPTABLES -t nat -A unauthorized_PREROUTING  -p udp -m udp --dport           53 -j DNAT --to-destination "$internalAddr"
+$IPTABLES -t nat -A unauthorized_PREROUTING  -p udp -m udp --dport          123 -j DNAT --to-destination "$internalAddr"
+test -n "$sshPort" -a "$sshPort" != "22" && { 
+$IPTABLES -t nat -A unauthorized_PREROUTING  -p tcp -m tcp --dport  "$sshPort"  -j DNAT --to-destination "$internalAddr":22
+$IPTABLES -t nat -A unauthorized_PREROUTING  -p tcp -m tcp --dport          22  -j DNAT --to-destination "$internalAddr":9
+}
+
+
+$IPTABLES -t nat -N authorized_POSTROUTING
+test "$verbose" == "true" &&
+$IPTABLES -t nat -A authorized_POSTROUTING -j LOG --log-level debug --log-prefix 'authorized_POSTROUTING '
+#
+$IPTABLES -t nat -A authorized_POSTROUTING -o "$externalIface" -j	MASQUERADE
+$IPTABLES -t nat -A authorized_POSTROUTING -j ACCEPT
+
+
+$IPTABLES        -N authorized_FORWARD
+test "$verbose" == "true" &&
+$IPTABLES        -A authorized_FORWARD -j LOG --log-level debug --log-prefix 'authorized_FORWARD '
+#
+$IPTABLES        -A authorized_FORWARD -m state --state NEW -j ACCEPT
+
+
+$IPTABLES        -N FORWARD_cleanup
+test "$verbose" == "true" &&
+$IPTABLES -A FORWARD_cleanup -j LOG  --log-level info --log-prefix "CLEANUP "
+$IPTABLES -A FORWARD_cleanup -j DROP
+
+
+$IPTABLES -t nat -N checkauth_PREROUTING
+$IPTABLES -t nat -I prerouting_rule  -s "$addrRange" -j unauthorized_PREROUTING
+$IPTABLES -t nat -I prerouting_rule                  -j checkauth_PREROUTING
+#
+$IPTABLES -t nat -N checkauth_POSTROUTING
+$IPTABLES -t nat -I postrouting_rule -j checkauth_POSTROUTING
+#
+$IPTABLES        -N checkauth_FORWARD
+$IPTABLES        -I forwarding_rule -j FORWARD_cleanup
+$IPTABLES        -I forwarding_rule -j checkauth_FORWARD
+
+
+$IPTABLES -N unauthorized_INPUT_local
+test "$verbose" == "true" &&
+$IPTABLES -A unauthorized_INPUT_local -j LOG --log-level debug --log-prefix 'unauthorized_INPUT_local '
+#
+$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$unauthHttpPort"  -m state --state NEW  -j ACCEPT 
+$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$unauthHttpsPort" -m state --state NEW  -j ACCEPT
+$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$authHttpsPort"   -m state --state NEW  -j ACCEPT 
+$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$authHttpPort"    -m state --state NEW  -j ACCEPT 
+$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$squidPort"       -m state --state NEW  -j ACCEPT 
+$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport                 22 -m state --state NEW  -j ACCEPT 
+$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport                 53 -m state --state NEW  -j ACCEPT 
+$IPTABLES -A unauthorized_INPUT_local -p udp -m udp  --dport                 53 -m state --state NEW  -j ACCEPT 
+#$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$unauthDnsPort"   -m state --state NEW  -j ACCEPT 
+#$IPTABLES -A unauthorized_INPUT_local -p udp -m udp  --dport "$unauthDnsPort"   -m state --state NEW  -j ACCEPT 
+$IPTABLES -A unauthorized_INPUT_local -p udp -m udp  --dport                123 -m state --state NEW  -j ACCEPT 
+#$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport                 23 -m state --state NEW  -j ACCEPT 
+#
+#
+$IPTABLES        -N unauthorized_INPUT
+test "$verbose" == "true" &&
+$IPTABLES        -A unauthorized_INPUT -j LOG --log-level debug --log-prefix 'unauthorized_INPUT '
+#
+$IPTABLES -A unauthorized_INPUT -p udp -m udp --sport 68 --dport 67 -i "$internalIface"         -j ACCEPT 
+$IPTABLES -A unauthorized_INPUT -p tcp -m tcp            --dport 22       -m state --state NEW  -j ACCEPT
+#
+test "$externalAdmin" == "YES" &&     
+$IPTABLES -A unauthorized_INPUT -p tcp -m tcp --dport  "$unauthHttpsPort" -m state --state NEW  -j ACCEPT
+#
+#
+
+$IPTABLES        -N INPUT_cleanup
+test "$verbose" == "true" &&
+$IPTABLES -A INPUT_cleanup -j LOG  --log-level info --log-prefix "CLEANUP "
+$IPTABLES -A INPUT_cleanup -j DROP
+
+$IPTABLES        -I input_rule                 -j INPUT_cleanup
+$IPTABLES        -I input_rule                 -j unauthorized_INPUT
+$IPTABLES        -I input_rule -s "$addrRange" -j unauthorized_INPUT_local

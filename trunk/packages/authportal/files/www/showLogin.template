@@ -1,0 +1,25 @@
+<html>
+ <head>
+  <title>Беспроводная сеть ресторана “ТЕПЛО”</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+ </head>
+ <body>
+ <FORM ACTION="$actionUrl" METHOD="POST" NAME="AuthForm">
+  <INPUT TYPE="hidden" name="origUrl" VALUE="$origUrl">
+  <INPUT TYPE="hidden"  value="nopass" name="password" SIZE="16" MAXLENGTH="64"/>
+	$loginText
+  <table align="center" WIDTH="70%" HEIGHT="100%">
+   <tr ALIGN="left" VALIGN="middle">
+    <td>
+		Здравствуй, дорогой Гость! <br>
+		Ты можешь выйти в интернет, не выходя из-за стола. <br>
+		Для этого нужно попросить у официанта карточку с кодом доступа, который ввести сюда...
+		<INPUT TYPE="text" name="username" SIZE="16" MAXLENGTH="64"/>	
+	    <INPUT TYPE="submit" name="login" VALUE="ТЫЦ"/>
+	    <p/>$reason
+    </td>
+   </tr>
+  </table>
+ </FORM>
+ </body>
+</html>

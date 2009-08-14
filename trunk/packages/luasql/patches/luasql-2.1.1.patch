@@ -1,0 +1,52 @@
+diff -ubBENdr luasql-2.1.1.orig/config luasql-2.1.1/config
+--- luasql-2.1.1.orig/config	2009-08-08 02:36:21.000000000 +0400
++++ luasql-2.1.1/config	2009-08-12 22:09:21.000000000 +0400
+@@ -3,19 +3,19 @@
+ #T= oci8
+ #T= odbc
+ #T= postgres
+-#T= sqlite
+-T=sqlite3
++T= sqlite
++#T=sqlite3
+ 
+ # Installation directories
+ 
+ # Default prefix
+-PREFIX = /usr/local
++# PREFIX = /usr/local # Will be set externally
+ 
+ # System's libraries directory (where binary libraries are installed)
+-LUA_LIBDIR= $(PREFIX)/lib/lua/5.1
++LUA_LIBDIR= $(PREFIX)/lib/lua/
+ 
+ # System's lua directory (where Lua libraries are installed)
+-LUA_DIR= $(PREFIX)/share/lua/5.1
++LUA_DIR= $(PREFIX)/lib/lua/
+ 
+ # Lua includes directory
+ LUA_INC= $(PREFIX)/include
+@@ -42,18 +42,18 @@
+ #DRIVER_LIBS= -L/usr/local/pgsql/lib -lpq
+ #DRIVER_INCS= -I/usr/local/pgsql/include
+ ######## SQLite
+-#DRIVER_LIBS= -lsqlite
+-#DRIVER_INCS=
+-######## SQLite3 
+-DRIVER_LIBS= -L/opt/local/lib -lsqlite3
++DRIVER_LIBS= -L/opt/local/lib -lsqlite
+ DRIVER_INCS= -I/opt/local/include
++######## SQLite3 
++#DRIVER_LIBS= -L/opt/local/lib -lsqlite3
++#DRIVER_INCS= -I/opt/local/include
+ ######## ODBC
+ #DRIVER_LIBS= -L/usr/local/lib -lodbc
+ #DRIVER_INCS= -DUNIXODBC -I/usr/local/include
+ 
+ WARN= -Wall -Wmissing-prototypes -Wmissing-declarations -ansi -pedantic
+ INCS= -I$(LUA_INC)
+-CFLAGS= -O2 $(WARN) -I$(COMPAT_DIR) $(DRIVER_INCS) $(INCS) $(DEFS)
++CFLAGS= $(WARN) -I$(COMPAT_DIR) $(DRIVER_INCS) $(INCS) $(DEFS)
+ CC= gcc
+ 
+ # $Id: config,v 1.8 2007/10/27 22:55:27 carregal Exp $

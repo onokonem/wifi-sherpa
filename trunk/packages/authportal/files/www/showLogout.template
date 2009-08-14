@@ -1,0 +1,25 @@
+<html>
+ <head>
+  <title>Беспроводная сеть ресторана "Тепло"</title>
+	<meta HTTP-EQUIV="REFRESH" content="7; URL=$origUrl">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+ </head>
+ <body>
+  <table ALIGN="center" VALIGN="middle" WIDTH="100%" HEIGHT="100%">
+   <tr ALIGN="center" VALIGN="middle">
+    <td>
+     <FORM ACTION="$actionUrl" METHOD="POST" NAME="LogoutForm">
+      <table>
+       <tr>
+        <td ALIGN="center">Дорогой Гость, у Тебя все получилось – Ты в интернете! <br>
+		Если Ты в течение нескольких секунд не попал на ту страничку, куда собирался, нажми на ссылку <a href="$origUrl">ТЫЦ ($origUrl)</a></td>
+       </tr>
+        <td ALIGN="right"><INPUT TYPE="submit" name="logout" VALUE="Отключите меня от интернета!"/></td>
+       </tr>
+      </table>
+     </FORM>
+    </td>
+   </tr>
+  </table>
+ </body>
+</html>
