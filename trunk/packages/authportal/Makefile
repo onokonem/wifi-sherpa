@@ -22,7 +22,8 @@ endef
 
 
 define Build/Configure
-	# No configure required
+    mkdir -p $(PKG_BUILD_DIR)/files/etc/certs/CA/
+	$(CP) ./files/etc/certs/CA/* $(PKG_BUILD_DIR)/files/etc/certs/CA/
 endef
 
 define Build/Compile
