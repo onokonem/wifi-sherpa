@@ -1,0 +1,4 @@
+#labels Featured
+For the moment, we, the authors of this code do not allow anybody to use this code for any pourposes.
+
+We are working on more useful license at the moment. Yes, it would be open-spource and GPL-conform.
