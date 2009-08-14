@@ -13,6 +13,7 @@ require "fwwrt.authportal"
 
 local webDir     = fwwrt.util.uciGet('httpd.httpd.home',            'string')
 local hostname   = fwwrt.util.uciGet('fwwrt.authportal.httpsName',  'string')
+--local ssid       = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string')
 
 function insertUser(user) --should sheck values and return errors correctly
 --	assert (fwwrt.authportal.dbCon:execute(string.format([[
@@ -95,7 +96,7 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 --	local request = wsapi.request.new(wsapi_env)
 --	coroutine.yield("<pre>"..printTable(request, "request", ".", 10).."</pre>")
 	local countP = request.POST.count
-	local note = request.POST.note
+--	local note = request.POST.note
 	
 	
 	local useIn = {}
@@ -125,15 +126,18 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 					fwwrt.util.fileToVariable(webDir.."/cardTable.template").."]]", countP),
 				rows = "$do_cosm[["..fwwrt.util.fileToVariable(webDir.."/cardRows.template").."]]",
 				card = "$do_user[["..fwwrt.util.fileToVariable(webDir.."/card.template").."]]",
+--				ssid = ssid,
 				height = height,
 				width = width
+--				expireIn = expireIn
 			}
 		end,
 		do_user = function()
 			s = s + 5
 			cosmo.yield{
 				user = autoMakeUser(passLength, s*3+os.time()),
-				note = "i = '"..s.."'",
+				ssid = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string'),
+--				note = "i = '"..s.."'",
 				height = height,
 				width = width
 			}
@@ -143,9 +147,12 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 	i = 0
 	while string.find(template, "%$") ~= nill and i < 10 do
 		template = cosmo.fill(template,values)
+		print("filling template... Level "..i)
+		i = i + 1
 	end
-
-	
+	print("ok, page ready to show")
+--	print(template)
+--	print("ssid = "..ssid)
 	coroutine.yield(template)
 --	test(wsapi_env)
 	print("3003")

@@ -20,6 +20,7 @@ local webDir     = fwwrt.util.uciGet('httpd.httpd.home',            'string')
 local hostname   = fwwrt.util.uciGet('fwwrt.authportal.httpsName',  'string')
 local loginDelay = fwwrt.util.uciGet('fwwrt.authportal.logindelay', 'number')
 local dbFile     = fwwrt.util.uciGet('fwwrt.authportal.dbFile',     'string')
+--local ssid       = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string')
 
 -- create environment object
 dbEnv = assert(luasql.sqlite())
