@@ -1,0 +1,36 @@
+#!/bin/sh /etc/rc.common
+
+START=95
+
+start() {
+  runningPid=`ps | grep 'sh -c  while true do echo 0 > /proc/diag/led/power'|grep -v grep|awk '{print $1}'`
+  test -n "$runningPid" &&
+    {
+    echo "Do not start me twice, please!" 1>&2
+    exit 1
+    }
+  
+  sh -c '
+  while true
+    do
+    echo 0 > /proc/diag/led/power
+    sleep 1
+    echo 1 > /proc/diag/led/power
+    sleep 1
+    echo 0 > /proc/diag/led/power
+    sleep 1
+    echo 1 > /proc/diag/led/power
+    sleep 2
+    done < /dev/null 2>&1 > /dev/null
+  ' &
+}
+
+stop() {
+  runningPid=`ps | grep 'sh -c  while true do echo 0 > /proc/diag/led/power'|grep -v grep|awk '{print $1}'`
+  test -z "$runningPid" &&
+    {
+    echo "Is it started?!" 1>&2
+    exit 2
+    }
+  kill "$runningPid"
+}

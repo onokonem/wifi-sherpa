@@ -1,0 +1,20 @@
+#!/bin/sh
+
+case "$ACTION" in
+        add)     
+                [ -n ${PRODUCT} ] &&                
+                [ -n ${INTERFACE} ] &&              
+                [ "${PRODUCT}" = "4e8/6761/1" ] &&  
+                [ "${INTERFACE}" = "255/0/0" ] && { 
+                        /etc/init.d/madwimax start  
+                }                                   
+                ;;                                  
+        remove)                                     
+                [ -n ${PRODUCT} ] &&                
+                [ -n ${INTERFACE} ] &&              
+                [ "${PRODUCT}" = "4e8/6761/1" ] &&  
+                [ "${INTERFACE}" = "255/0/0" ] && { 
+                        /etc/init.d/madwimax stop   
+                }                                   
+                ;;                                  
+esac

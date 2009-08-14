@@ -1,0 +1,15 @@
+--- ./config.orig	Sun Oct 28 02:42:32 2007
++++ ./config	Tue Jul 28 00:04:31 2009
+@@ -1,10 +1,10 @@
+ # Installation directories
+ 
+ # Default installation prefix
+-PREFIX=/usr/local
++# PREFIX = /usr/local # Prefix set externally
+ 
+ # System's libraries directory (where binary libraries are installed)
+-LUA_LIBDIR= $(PREFIX)/lib/lua/5.1
++LUA_LIBDIR= $(PREFIX)/lib/lua
+ 
+ # Lua includes directory
+ LUA_INC= $(PREFIX)/include

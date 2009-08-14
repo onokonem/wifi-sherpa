@@ -1,0 +1,5 @@
+
+      <tr>
+       <td ALIGN="right"><b>password:</b></td>
+       <td ALIGN="left"><INPUT TYPE="password" name="password" SIZE="16" MAXLENGTH="64"/></td>
+      </tr>
