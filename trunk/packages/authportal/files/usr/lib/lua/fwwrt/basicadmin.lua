@@ -36,16 +36,6 @@ function checkOpLogin(user, pass)
 	return id
 end
 
-function showAdminLogin(wsapi_env, reason)
-	reason = reason or ""
-	local template  = fwwrt.util.fileToVariable(webDir.."/showAdminLogin.template")
-	local values    = {actionUrl = "https://"..hostname.."/"
-	                  ,reason    = reason
-	                  }
-	local process = function () coroutine.yield(cosmo.fill(template, values)) end
-	return 200, commonHeaders, coroutine.wrap(process)
-end
-
 function insertUser(user) --should sheck values and return errors correctly todo
 --	assert (fwwrt.authportal.dbCon:execute(string.format([[
 --		INSERT INTO users(username)
@@ -126,6 +116,14 @@ function generate(length, rSeed, charSet)
 	return randGen(length,charSet)
 end
 
+function checkCookie(cookie) --todo: improve me
+	if cookie == "opname=root" then
+		return true
+	else
+		return nil
+	end
+end
+
 function doAdmin(wsapi_env, request) --generate cards, create users
 	local width="40%"
 	local height="85mm"
@@ -197,25 +195,49 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 	print("3003")
 end
 
-function showBasicAdminForm(wsapi_env) --showlogin
-	local template  = fwwrt.util.fileToVariable(webDir.."/cardGen.template")
-	local values = {actionUrl = "https://"..hostname.."/admin"
-	               }
-
+function showAdminLogin(wsapi_env, reason)
+	local reason = reason or ""
+	local template  = fwwrt.util.fileToVariable(webDir.."/showAdminLogin.template")
+	local values    = {actionUrl = "https://"..hostname.."/admin"
+	                  ,reason    = reason}
+	
 	local process = function () coroutine.yield(cosmo.fill(template, values)) end
 	return 200, commonHeaders, coroutine.wrap(process)
 end
 
+function makeCookieHeaders(wsapi_env)
+	local expireTime	= tostring(os.date ("!%a, %d-%b-%Y %H:%M:%S GMT",os.time()+3600));
+	local cookedHeaders = commonHeaders
+	cookedHeaders = {["Set-Cookie"] = "opname=root; expires="..expireTime}
+	return cookedHeaders
+end
+
+function showBasicAdminForm(wsapi_env) --showlogin
+	local template  = fwwrt.util.fileToVariable(webDir.."/cardGen.template")
+	local values = {actionUrl = "https://"..hostname.."/admin"}
+
+	local process = function () coroutine.yield(cosmo.fill(template, values)) end
+	return 200, makeCookieHeaders(wsapi_env), coroutine.wrap(process)
+end
+
 function processBasicAdminForm(wsapi_env) --main
 	local request  = wsapi.request.new(wsapi_env)
-	-- coockies
-	local cookiename = "wifi-sherpa"
-	expirytime	= os.time() + 3600;
+	local trueadmin = false
+	if checkCookie(wsapi_env.HTTP_COOKIE) = nil then
+		if request.method ~= 'POST' or request.POST.oplogin == nil -- нет куки, не логинилсо
+		or checkOpLogin(request.POST.opname, request.POST.oppass) = nil then -- логинилсо неудачно 
+			return showAdminLogin(wsapi_env)
+		else  -- успешн логин
+			trueadmin = true -- избыточность
+		end
+	else
+		trueadmin = true -- избыточность
+	end
 	
-	--coockies done
-	if (request.method ~= 'POST')
-    	then return showBasicAdminForm(wsapi_env) end
+	if (request.method ~= 'POST' and trueadmin == true)
+		then return showBasicAdminForm(wsapi_env) 
+	end
 
     local callDoAdmin = function() return doAdmin(wsapi_env, request) end
-    return 200, commonHeaders, coroutine.wrap(callDoAdmin)
+    return 200, makeCookieHeaders(wsapi_env), coroutine.wrap(callDoAdmin)
 end
