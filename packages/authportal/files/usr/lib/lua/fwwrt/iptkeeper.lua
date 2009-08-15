@@ -10,6 +10,7 @@
 module("fwwrt.iptkeeper", package.seeall)
 
 require "fwwrt.util"
+require "fwwrt.authportal"
 
 -------------------------------------------------------------
 -------------------------------------------------------------
@@ -41,6 +42,7 @@ function logIpIn(ip, expire)
 function logIpOut(ip)
 	loggedIn[ip] = nil
 	loggedInTableChanged = true
+	fwwrt.authportal.doLogout(ip)
 	fwwrt.util.logger("LOG_INFO", "'"..tostring(ip).."' logged out by request")
 	return true
 	end
