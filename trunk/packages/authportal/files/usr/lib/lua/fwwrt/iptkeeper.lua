@@ -79,14 +79,17 @@ function loggedInCleanup (loggedIn, leases, curTime)
 		do
 		if (not (leases[ip] and leases[ip].expire > curTime))
 			then
+			fwwrt.authportal.doLogout(ip)
 			loggedInTableChanged = true
 			fwwrt.util.logger("LOG_INFO", "'"..tostring(ip).."' logged out as not renewed")
 		elseif (info.mac ~= leases[ip].mac)
 			then
+			fwwrt.authportal.doLogout(ip)
 			loggedInTableChanged = true
 			fwwrt.util.logger("LOG_INFO", "'"..tostring(ip).."' logged out as MAC changed")
 		elseif (info.expire < curTime)
 			then
+			fwwrt.authportal.doLogout(ip)
 			loggedInTableChanged = true
 			fwwrt.util.logger("LOG_INFO", "'"..tostring(ip).."' logged out as expired")
 		else
