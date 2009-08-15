@@ -59,3 +59,4 @@ endef
 
 $(eval $(call BuildPackage,authportal))
 
+# Just to test notification group
