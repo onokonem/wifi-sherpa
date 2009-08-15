@@ -27,7 +27,7 @@ define Package/copas-ssl
   CATEGORY:=FWWRT
   TITLE:=CoroutineOrientedPortableAsyncServices for Lua, SSL-enabled
   URL:=http://www.keplerproject.org/copas/
-  DEPENDS:+=lua openssl luasocket coxpcall
+  DEPENDS:=+lua +luasec +coxpcall
 endef
 
 MAKE_FLAGS += PREFIX="$(PKG_INSTALL_DIR)/usr"

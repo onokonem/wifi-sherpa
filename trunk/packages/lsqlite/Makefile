@@ -27,7 +27,7 @@ define Package/lsqlite
   CATEGORY:=FWWRT
   TITLE:=Binding to SQLite 3 databases
   URL:=http://luaforge.net/projects/luasqlite/
-  DEPENDS:+=lua sqlite3
+  DEPENDS:=+lua +libsqlite3
 endef
 
 MAKE_FLAGS += PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -L$(STAGING_DIR)/usr/lib -pedantic -Wall -fpic -ldl -lm" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic"

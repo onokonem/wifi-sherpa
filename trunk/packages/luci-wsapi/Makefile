@@ -25,7 +25,7 @@ define Package/luci-wsapi
   CATEGORY:=FWWRT
   TITLE:=WSAPI wrapper for LuCI
   URL:=http://luci.freifunk-halle.net/
-  DEPENDS:+=lua luci 
+  DEPENDS:=+luci +wsapi 
 endef
 
 define Build/Prepare

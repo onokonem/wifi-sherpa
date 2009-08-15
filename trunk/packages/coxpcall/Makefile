@@ -25,7 +25,7 @@ define Package/coxpcall
   CATEGORY:=FWWRT
   TITLE:=Coroutine-safe xpcall and pcall versions
   URL:=http://coxpcall.luaforge.net/
-  DEPENDS:+=lua
+  DEPENDS:=+lua
 endef
 
 define Build/Compile

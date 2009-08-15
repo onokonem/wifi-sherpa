@@ -25,7 +25,7 @@ define Package/orbit
   CATEGORY:=FWWRT
   TITLE:=MVC for Lua Web Development
   URL:=http://orbit.luaforge.net/
-  DEPENDS:+=wsapi luafilesystem cosmo
+  DEPENDS:=+wsapi +luafilesystem +cosmo
 endef
 
 define Package/orbit/install

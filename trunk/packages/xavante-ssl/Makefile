@@ -27,7 +27,7 @@ define Package/xavante-ssl
   CATEGORY:=FWWRT
   TITLE:=A Lua Web Server with WSAPI support, SSL-enabled
   URL:=http://www.keplerproject.org/xavante/
-  DEPENDS:+=lua copas-ssl
+  DEPENDS:=+copas-ssl
 endef
 
 MAKE_FLAGS += PREFIX="$(PKG_INSTALL_DIR)/usr"

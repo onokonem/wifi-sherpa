@@ -23,7 +23,7 @@ define Package/fakedns
   SECTION:=fwwrt
   CATEGORY:=FWWRT
   TITLE:=Start a dnsmasq in fake mode
-  DEPENDS:+=dnsmasq
+  DEPENDS:=+dnsmasq
 endef
 
 

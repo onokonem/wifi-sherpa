@@ -25,7 +25,7 @@ define Package/fwwrt-face
   CATEGORY:=FWWRT
   TITLE:=LuCI based FWWRT athentication portal
   #URL:=http://fwwrt-face.luaforge.net/
-  DEPENDS:+=luci
+  DEPENDS:=+luci
 endef
 
 #MAKE_FLAGS += LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic"

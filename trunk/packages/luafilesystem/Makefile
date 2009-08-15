@@ -25,7 +25,7 @@ define Package/luafilesystem
   CATEGORY:=FWWRT
   TITLE:=File System Library for the Lua Programming Language
   URL:=http://www.keplerproject.org/luafilesystem/
-  DEPENDS:+=lua
+  DEPENDS:=+lua
 endef
 
 MAKE_FLAGS += PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic"

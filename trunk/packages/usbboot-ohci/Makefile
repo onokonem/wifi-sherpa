@@ -24,7 +24,7 @@ define Package/usbboot-ohci
   CATEGORY:=FWWRT
   TITLE:=Set of scripts to boot router from ext2 flash
   #URL:=no-internet-page-yet
-  DEPENDS:+=libext2fs fs-ext2 fs-ext3 usb-core usb-ohci usb-storage e2fsprogs mount-utils fdisk
+  DEPENDS:=+libext2fs +fs-ext2 +usb-ohci +usb-storage +fdisk
 endef
 
 

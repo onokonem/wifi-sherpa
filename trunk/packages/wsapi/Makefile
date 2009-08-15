@@ -23,9 +23,9 @@ define Package/wsapi
   SUBMENU:=Lua
   SECTION:=fwwrt
   CATEGORY:=FWWRT
-  TITLE:=Coroutine-safe xpcall and pcall versions
+  TITLE:=Lua Web Server API
   URL:=http://wsapi.luaforge.net/
-  DEPENDS:+=lua
+  DEPENDS:=+lua
 endef
 
 define Build/Compile

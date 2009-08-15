@@ -25,7 +25,7 @@ define Package/cosmo
   CATEGORY:=FWWRT
   TITLE:=Safe Templates in Lua
   URL:=http://cosmo.luaforge.net/
-  DEPENDS:+=lua
+  DEPENDS:=+lua
 endef
 
 define Package/cosmo/install
