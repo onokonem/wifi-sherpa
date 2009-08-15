@@ -13,6 +13,7 @@
 		<p>
 		<INPUT TYPE="text" name="opname" SIZE="16" MAXLENGTH="64"/>
 		<INPUT TYPE="password" name="oppass" SIZE="16" MAXLENGTH="64"/>	
+		<INPUT TYPE="hidden" name = "oplogin" value = "true" />
 		<INPUT TYPE="submit" name="login" VALUE="готово"/>
 		</p>
 	    <p/>$reason</p>
