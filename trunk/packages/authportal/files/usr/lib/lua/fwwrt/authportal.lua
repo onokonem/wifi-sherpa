@@ -3,6 +3,7 @@
 -- FWWRT authentication portal helper methods
 --
 -- Daniel Podolsky, tpaba@cpan.org, 2009-08-04
+-- Roman Belyakovsky, roman.belyakovsky@gmail.com
 -- Licence is the same as OpenWRT
 
 
@@ -63,6 +64,29 @@ function processLogoutForm(wsapi_env) --showlogin
 	return 302, redirectHeaders("http://"..hostname.."/"), coroutine.wrap(yeldSleep)
 end
 
+function doLogout(ip)
+	if ip ~= nil
+--		select from activeusers and operate values for all of them
+		dbCon:exec[[delete from activeusers]]
+	else
+			local stmt = dbCon:prepare[[ SELECT * FROM operators WHERE username = :user AND pass = :pass ]]
+			stmt:bind_names{  user = user,  pass = pass    }
+			stmt:step()
+		--	stmt:reset()
+			stmt:finalize()
+			return true
+	
+	
+	create table activeusers(
+	    ipaddr char unique,
+	    userid integer,
+	    logintime integer
+	    );
+	SELECT 
+end
+
+-- do function doLogin()
+
 function showLoginForm(wsapi_env, reason, message) --showlogin
     reason = reason or ""
 	local loginText = ""
@@ -82,12 +106,12 @@ function showLoginForm(wsapi_env, reason, message) --showlogin
 end
 
 function checkLogin(user)
-	cur = assert (dbCon:execute(string.format([[
+	local cur = assert (dbCon:execute(string.format([[
 		select * from users where username = '%s']], user))
 	)
 	-- row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
 	
-	id = assert(cur:fetch({}, "a").userid, "user doesn't exist") --change userid to expire or hwatever
+	local id = assert(cur:fetch({}, "a").userid, "user doesn't exist") --change userid to expire or hwatever
 	
 	cur:close()
 	return id  

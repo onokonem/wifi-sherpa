@@ -40,10 +40,10 @@ function printInfo(wsapi_env, funcName)
 		coroutine.yield("<p>PATH_INFO: " .. wsapi_env.PATH_INFO .. "</p>")
 		coroutine.yield("<p>SCRIPT_NAME: " .. wsapi_env.SCRIPT_NAME .. "</p>")
 		coroutine.yield("</body></html>")
-		end
+	end
 
 	return 200, headers, coroutine.wrap(htmlBody)
-	end
+end
 	
 function   authHttpHandler  (wsapi_env) return printInfo(wsapi_env, "authHttpHandler")    end
 function   authHttpsHandler (wsapi_env) return printInfo(wsapi_env, "authHttpsHandler")   end
