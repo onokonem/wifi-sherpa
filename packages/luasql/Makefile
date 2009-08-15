@@ -25,7 +25,7 @@ define Package/luasql
   CATEGORY:=FWWRT
   TITLE:=Database connectivity for the Lua
   URL:=http://www.keplerproject.org/luasql/
-  DEPENDS:+=lua sqlite
+  DEPENDS:=+lua +libsqlite
 endef
 
 MAKE_FLAGS += PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -L$(STAGING_DIR)/usr/lib -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic"

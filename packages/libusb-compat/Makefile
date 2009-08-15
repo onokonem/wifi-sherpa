@@ -25,7 +25,7 @@ define Package/libusb-compat
   CATEGORY:=FWWRT
   TITLE:=A compatibility library for libusb (v 1.0 -> v 0.1)
   URL:=http://libusb.sourceforge.net/
-  DEPENDS:+=libusb1
+  DEPENDS:=+libusb1
 endef
 
 define Build/Configure

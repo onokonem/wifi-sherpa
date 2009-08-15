@@ -17,7 +17,7 @@ define Package/wimaxwan
   SECTION:=fwwrt
   CATEGORY:=FWWRT
   TITLE:=Set of scripts to use WiMax interface as WAN
-  DEPENDS:+=madwimax
+  DEPENDS:=+madwimax
 endef
 
 

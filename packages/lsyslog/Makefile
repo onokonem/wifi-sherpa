@@ -25,7 +25,7 @@ define Package/lsyslog
   CATEGORY:=FWWRT
   TITLE:=A Lua wrapper for the syslog C API
   URL:=http://lsyslog.luaforge.net/
-  DEPENDS:+=lua
+  DEPENDS:=+lua
 endef
 
 MAKE_FLAGS += LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic"

@@ -17,7 +17,7 @@ define Package/fwwrt-uci-config
   SECTION:=fwwrt
   CATEGORY:=FWWRT
   TITLE:=Set default FWWRT config parameters if needed
-  DEPENDS:+=uci
+  DEPENDS:=+uci
 endef
 
 

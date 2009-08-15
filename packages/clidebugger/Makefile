@@ -25,7 +25,7 @@ define Package/clidebugger
   CATEGORY:=FWWRT
   TITLE:=A simple command line interface debugger for Lua 5.1
   URL:=http://luaforge.net/projects/clidebugger/
-  DEPENDS:+=lua
+  DEPENDS:=+lua
 endef
 
 define Build/Prepare
