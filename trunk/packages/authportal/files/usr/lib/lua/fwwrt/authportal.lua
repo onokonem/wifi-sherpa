@@ -65,24 +65,14 @@ function processLogoutForm(wsapi_env) --showlogin
 end
 
 function doLogout(ip)
-	if ip ~= nil
+--	if ip ~= nil
 --		select from activeusers and operate values for all of them
-		dbCon:exec[[delete from activeusers]]
-	else
-			local stmt = dbCon:prepare[[ SELECT * FROM operators WHERE username = :user AND pass = :pass ]]
-			stmt:bind_names{  user = user,  pass = pass    }
-			stmt:step()
-		--	stmt:reset()
-			stmt:finalize()
+--		dbCon:exec[[delete from activeusers]]
+--	else
+--			local stmt = dbCon:prepare[[ SELECT * FROM operators WHERE username = :user AND pass = :pass ]]
+
 			return true
-	
-	
-	create table activeusers(
-	    ipaddr char unique,
-	    userid integer,
-	    logintime integer
-	    );
-	SELECT 
+
 end
 
 -- do function doLogin()
