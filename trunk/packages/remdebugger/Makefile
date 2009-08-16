@@ -27,7 +27,7 @@ define Package/remdebugger
   CATEGORY:=FWWRT
   TITLE:=Remote Debugger for the Lua programming language
   URL:=http://www.keplerproject.org/remdebug
-  DEPENDS:=+lua +lsocket +luafilesystem
+  DEPENDS:=+lua +luasocket +luafilesystem
 endef
 
 define Build/Compile
