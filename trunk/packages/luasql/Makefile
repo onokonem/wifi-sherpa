@@ -19,21 +19,22 @@ include $(INCLUDE_DIR)/package.mk
 
 PKG_INSTALL=1
 
+COMPILE_LIST= 
 DRIVER_LIBS_LIST= 
-INSTALL_FLAGS= 
+INSTALL_LIST= 
 
-MAKE_FLAGS+= PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -L$(STAGING_DIR)/usr/lib -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic" DRIVER_LIBS="$(DRIVER_LIBS_LIST)"
+MAKE_FLAGS+= PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -L$(STAGING_DIR)/usr/lib -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic"
 
 define Build/Configure
         echo "CALL luasql/Build/Configure"
 endef
 
 define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS)
+	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) DRIVER_LIBS="$(DRIVER_LIBS_LIST)" $(COMPILE_LIST)
 endef
 
 define Build/Install
-	$(MAKE) -C $(PKG_BUILD_DIR) $(INSTALL_FLAGS)
+	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) $(INSTALL_LIST)
 endef
 
 
@@ -51,8 +52,8 @@ define Package/luasql-sqlite2
 	TITLE+=, sqlite2 driver
 	DEPENDS+= +libsqlite2
 	DRIVER_LIBS_LIST+= -lsqlite
-	MAKE_FLAGS+= sqlite_lib
-	INSTALL_FLAGS+= sqlite_install
+	COMPILE_LIST+= sqlite_lib
+	INSTALL_LIST+= sqlite_install
 endef
 
 define Package/luasql-sqlite2/install
@@ -65,8 +66,8 @@ define Package/luasql-sqlite3
 	TITLE+=, sqlite3 driver
 	DEPENDS+= +libsqlite3
 	DRIVER_LIBS_LIST+= -lsqlite3
-	MAKE_FLAGS+= sqlite3_lib
-	INSTALL_FLAGS+= sqlite3_install
+	COMPILE_LIST+= sqlite3_lib
+	INSTALL_LIST+= sqlite3_install
 endef
 
 define Package/luasql-sqlite3/install
@@ -79,8 +80,8 @@ define Package/luasql-mysql
 	TITLE+=, mysql driver
 	DEPENDS+= +libmysqlclient
 	DRIVER_LIBS_LIST+= -lmysqlclient -lz
-	MAKE_FLAGS+= mysql_lib
-	INSTALL_FLAGS+= mysql_install
+	COMPILE_LIST+= mysql_lib
+	INSTALL_LIST+= mysql_install
 endef
 
 define Package/luasql-mysql/install
@@ -93,8 +94,8 @@ define Package/luasql-pgsql
 	TITLE+=, postgres driver
 	DEPENDS+= +libpq
 	DRIVER_LIBS_LIST+= -lpq
-	MAKE_FLAGS+= postgres_lib
-	INSTALL_FLAGS+= postgres_install
+	COMPILE_LIST+= postgres_lib
+	INSTALL_LIST+= postgres_install
 endef
 
 define Package/luasql-pgsql/install
