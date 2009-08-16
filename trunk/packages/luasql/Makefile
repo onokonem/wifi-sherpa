@@ -58,7 +58,7 @@ endef
 
 define Package/luasql-sqlite2/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luasql/
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/luasql/sqlite.sq $(1)/usr/lib/lua/luasql/
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/luasql/sqlite.so $(1)/usr/lib/lua/luasql/
 endef
 
 define Package/luasql-sqlite3
@@ -72,7 +72,7 @@ endef
 
 define Package/luasql-sqlite3/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luasql/
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/luasql/sqlite3.sq $(1)/usr/lib/lua/luasql/
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/luasql/sqlite3.so $(1)/usr/lib/lua/luasql/
 endef
 
 define Package/luasql-mysql
@@ -86,7 +86,7 @@ endef
 
 define Package/luasql-mysql/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luasql/
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/luasql/mysql.sq $(1)/usr/lib/lua/luasql/
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/luasql/mysql.so $(1)/usr/lib/lua/luasql/
 endef
 
 define Package/luasql-pgsql
@@ -100,7 +100,7 @@ endef
 
 define Package/luasql-pgsql/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luasql/
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/luasql/postgres.sq $(1)/usr/lib/lua/luasql/
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/luasql/postgres.so $(1)/usr/lib/lua/luasql/
 endef
 
 $(eval $(call BuildPackage,luasql-sqlite2))
