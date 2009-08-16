@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luasql
 PKG_VERSION:=2.1.1
-PKG_RELEASE:=3
+PKG_RELEASE:=5
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://luaforge.net/frs/download.php/2686/
@@ -31,23 +31,24 @@ define Build/Install
 endef
 
 define Package/luasql/Default
-	SUBMENU:=Lua
 	SECTION:=fwwrt
 	CATEGORY:=FWWRT
 	TITLE:=Database connectivity for the Lua
 	URL:=http://www.keplerproject.org/luasql/
 	DEPENDS:=+lua
+	SUBMENU:=Lua
 endef
 
 define Package/luasql-sqlite2
 	$(call Package/luasql/Default)
 	TITLE+=, sqlite2 driver
-	DEPENDS+= +libsqlite
+	DEPENDS+= +libsqlite2
 	MAKE_FLAGS+= T="sqlite" DRIVER_LIBS=" -lsqlite"
 endef
 
 define Package/luasql-sqlite2/Install
-	$(call Build/Install)
+	$(INSTALL_DIR) $(1)/usr/lib/lua/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
 endef
 
 define Package/luasql-sqlite3
@@ -58,29 +59,32 @@ define Package/luasql-sqlite3
 endef
 
 define Package/luasql-sqlite3/Install
-	$(call Build/Install)
+	$(INSTALL_DIR) $(1)/usr/lib/lua/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
 endef
 
 define Package/luasql-mysql
 	$(call Package/luasql/Default)
 	TITLE+=, mysql driver
-	DEPENDS+= +libmysql
+	DEPENDS+= +libmysqlclient
 	MAKE_FLAGS+= T="mysql" DRIVER_LIBS=" -lmysqlclient -lz"
 endef
 
 define Package/luasql-mysql/Install
-	$(call Build/Install)
+	$(INSTALL_DIR) $(1)/usr/lib/lua/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
 endef
 
 define Package/luasql-pgsql
 	$(call Package/luasql/Default)
 	TITLE+=, postgres driver
-	DEPENDS+= +libpgsql
+	DEPENDS+= +libpq
 	MAKE_FLAGS+= T="pgsql" DRIVER_LIBS=" -lpq"
 endef
 
 define Package/luasql-pgsql/Install
-	$(call Build/Install)
+	$(INSTALL_DIR) $(1)/usr/lib/lua/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
 endef
 
 $(eval $(call BuildPackage,luasql-sqlite2))
