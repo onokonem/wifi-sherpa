@@ -46,11 +46,19 @@ define Package/luasql-sqlite2
 	MAKE_FLAGS+= T="sqlite" DRIVER_LIBS=" -lsqlite"
 endef
 
+define Package/luasql-sqlite2/Install
+	$(call Build/Install)
+endef
+
 define Package/luasql-sqlite3
 	$(call Package/luasql/Default)
 	TITLE+=, sqlite3 driver
 	DEPENDS+= +libsqlite3
 	MAKE_FLAGS+= T="sqlite3" DRIVER_LIBS=" -lsqlite3"
+endef
+
+define Package/luasql-sqlite3/Install
+	$(call Build/Install)
 endef
 
 define Package/luasql-mysql
@@ -60,11 +68,19 @@ define Package/luasql-mysql
 	MAKE_FLAGS+= T="mysql" DRIVER_LIBS=" -lmysqlclient -lz"
 endef
 
+define Package/luasql-mysql/Install
+	$(call Build/Install)
+endef
+
 define Package/luasql-pgsql
 	$(call Package/luasql/Default)
 	TITLE+=, postgres driver
 	DEPENDS+= +libpgsql
 	MAKE_FLAGS+= T="pgsql" DRIVER_LIBS=" -lpq"
+endef
+
+define Package/luasql-pgsql/Install
+	$(call Build/Install)
 endef
 
 $(eval $(call BuildPackage,luasql-sqlite2))
