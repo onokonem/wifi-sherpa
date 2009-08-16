@@ -51,10 +51,13 @@ define Package/luasql-sqlite2
 	$(call Package/luasql/Default)
 	TITLE+=, sqlite2 driver
 	DEPENDS+= +libsqlite2
-	DRIVER_LIBS_LIST+= -lsqlite
-	COMPILE_LIST+= sqlite_lib
-	INSTALL_LIST+= sqlite_install
 endef
+
+ifneq ($(CONFIG_PACKAGE_luasql-sqlite2),)
+DRIVER_LIBS_LIST+= -lsqlite
+COMPILE_LIST+= sqlite_lib
+INSTALL_LIST+= sqlite_install
+endif
 
 define Package/luasql-sqlite2/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luasql/
@@ -65,10 +68,13 @@ define Package/luasql-sqlite3
 	$(call Package/luasql/Default)
 	TITLE+=, sqlite3 driver
 	DEPENDS+= +libsqlite3
-	DRIVER_LIBS_LIST+= -lsqlite3
-	COMPILE_LIST+= sqlite3_lib
-	INSTALL_LIST+= sqlite3_install
 endef
+
+ifneq ($(CONFIG_PACKAGE_luasql-sqlite3),)
+DRIVER_LIBS_LIST+= -lsqlite3
+COMPILE_LIST+= sqlite3_lib
+INSTALL_LIST+= sqlite3_install
+endif
 
 define Package/luasql-sqlite3/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luasql/
@@ -79,10 +85,13 @@ define Package/luasql-mysql
 	$(call Package/luasql/Default)
 	TITLE+=, mysql driver
 	DEPENDS+= +libmysqlclient
-	DRIVER_LIBS_LIST+= -lmysqlclient -lz
-	COMPILE_LIST+= mysql_lib
-	INSTALL_LIST+= mysql_install
 endef
+
+ifneq ($(CONFIG_PACKAGE_luasql-mysql),)
+DRIVER_LIBS_LIST+= -lmysqlclient -lz
+COMPILE_LIST+= mysql_lib
+INSTALL_LIST+= mysql_install
+endif
 
 define Package/luasql-mysql/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luasql/
@@ -93,10 +102,13 @@ define Package/luasql-pgsql
 	$(call Package/luasql/Default)
 	TITLE+=, postgres driver
 	DEPENDS+= +libpq
-	DRIVER_LIBS_LIST+= -lpq
-	COMPILE_LIST+= postgres_lib
-	INSTALL_LIST+= postgres_install
 endef
+
+ifneq ($(CONFIG_PACKAGE_luasql-pgsql),)
+DRIVER_LIBS_LIST+= -lpq
+COMPILE_LIST+= postgres_lib
+INSTALL_LIST+= postgres_install
+endif
 
 define Package/luasql-pgsql/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luasql/
