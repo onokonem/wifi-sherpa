@@ -17,7 +17,7 @@ define Package/authportal
   SECTION:=fwwrt
   CATEGORY:=FWWRT
   TITLE:=FWWRT xavante-based authentication portal
-  DEPENDS:=+xavante-ssl +uci +luasql +luafilesystem
+  DEPENDS:=+xavante-ssl +uci +luasql +luafilesystem +wsapi +lsyslog
 endef
 
 
