@@ -19,7 +19,7 @@ include $(INCLUDE_DIR)/package.mk
 
 PKG_INSTALL=1
 
-MAKE_FLAGS += PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -L$(STAGING_DIR)/usr/lib -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic"
+MAKE_FLAGS+= PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -L$(STAGING_DIR)/usr/lib -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic"
 
 #define Build/Compile
 #	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) linux
@@ -46,8 +46,7 @@ define Package/luasql-sqlite2
 endef
 
 define Build/luasql-sqlite2/Compile
-	MAKE_FLAGS += T="sqlite" DRIVER_LIBS=" -lsqlite"
-	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) lib
+	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) T="sqlite" DRIVER_LIBS=" -lsqlite" lib
 endef
 
 
@@ -64,8 +63,7 @@ define Package/luasql-sqlite3
 endef
 
 define Build/luasql-sqlite3/Compile
-	MAKE_FLAGS += T="sqlite3" DRIVER_LIBS=" -lsqlite3"
-	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) lib
+	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) T="sqlite3" DRIVER_LIBS=" -lsqlite3" lib
 endef
 
 define Package/luasql-sqlite3/install
@@ -80,8 +78,7 @@ define Package/luasql-mysql
 endef
 
 define Build/luasql-mysql/Compile
-	MAKE_FLAGS += T="mysql" DRIVER_LIBS=" -lmysqlclient -lz"
-	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) lib
+	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) T="mysql" DRIVER_LIBS=" -lmysqlclient -lz" lib
 endef
 
 define Package/luasql-mysql/install
@@ -97,8 +94,7 @@ define Package/luasql-pgsql
 endef
 
 define Build/luasql-pgsql/Compile
-	MAKE_FLAGS += T="pgsql" DRIVER_LIBS=" -lpq"
-	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) lib
+	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) T="pgsql" DRIVER_LIBS=" -lpq" lib
 endef
 
 define Package/luasql-pgsql/install
