@@ -16,6 +16,7 @@ require "luasql.sqlite"
 
 require "fwwrt.util"
 require "fwwrt.iptkeeper"
+require "fwwrt.dbBackend"
 
 local webDir     = fwwrt.util.uciGet('httpd.httpd.home',            'string')
 local hostname   = fwwrt.util.uciGet('fwwrt.authportal.httpsName',  'string')
@@ -32,10 +33,7 @@ local statement = {["allActive"]  = "SELECT * FROM activeusers"
                   ,["tarifById"]  = "SELECT * FROM tarifs WHERE tarifid = ?"
                   }
 
--- create environment object
-dbEnv = assert(luasql.sqlite())
--- connect to data source
-dbCon = assert(dbEnv:connect(dbFile, 'NOCREATE'))
+dbCon = fwwrt.dbBackend.connection()
 
 local key, val
 for key, val in pairs(statement)
