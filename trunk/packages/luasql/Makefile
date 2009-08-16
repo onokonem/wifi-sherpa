@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luasql
 PKG_VERSION:=2.1.1
-PKG_RELEASE:=5
+PKG_RELEASE:=6
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://luaforge.net/frs/download.php/2686/
@@ -21,13 +21,12 @@ PKG_INSTALL=1
 
 MAKE_FLAGS+= PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -L$(STAGING_DIR)/usr/lib -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic"
 
-define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) lib
+define Build/Configure
+        echo "CALL luasql/Build/Configure"
 endef
 
-define Build/Install
-	$(INSTALL_DIR) $(1)/usr/lib/lua/
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
+define Build/Compile
+	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) lib
 endef
 
 define Package/luasql/Default
@@ -46,7 +45,7 @@ define Package/luasql-sqlite2
 	MAKE_FLAGS+= T="sqlite" DRIVER_LIBS=" -lsqlite"
 endef
 
-define Package/luasql-sqlite2/Install
+define Package/luasql-sqlite2/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
 endef
@@ -58,7 +57,7 @@ define Package/luasql-sqlite3
 	MAKE_FLAGS+= T="sqlite3" DRIVER_LIBS=" -lsqlite3"
 endef
 
-define Package/luasql-sqlite3/Install
+define Package/luasql-sqlite3/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
 endef
@@ -70,7 +69,7 @@ define Package/luasql-mysql
 	MAKE_FLAGS+= T="mysql" DRIVER_LIBS=" -lmysqlclient -lz"
 endef
 
-define Package/luasql-mysql/Install
+define Package/luasql-mysql/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
 endef
@@ -82,7 +81,7 @@ define Package/luasql-pgsql
 	MAKE_FLAGS+= T="pgsql" DRIVER_LIBS=" -lpq"
 endef
 
-define Package/luasql-pgsql/Install
+define Package/luasql-pgsql/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
 endef
