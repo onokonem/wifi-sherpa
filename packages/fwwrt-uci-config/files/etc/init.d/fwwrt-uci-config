@@ -47,6 +47,7 @@ config 'fwwrt' 'log'
 config 'fwwrt' 'authportal'
     option 'logindelay'      '2'
     option 'httpsName'       'hot.spot'
+    option 'dbType'          'sqlite2'
     option 'dbFile'          '/usr/local/fwwrt/authportal.sqlite2'
 EOF
 
