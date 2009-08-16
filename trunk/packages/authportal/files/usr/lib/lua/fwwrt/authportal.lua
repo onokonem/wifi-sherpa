@@ -23,11 +23,29 @@ local loginDelay = fwwrt.util.uciGet('fwwrt.authportal.logindelay', 'number')
 local dbFile     = fwwrt.util.uciGet('fwwrt.authportal.dbFile',     'string')
 --local ssid       = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string')
 
+local statement = {["allActive"]  = "SELECT * FROM activeusers"
+                  ,["oneActive"]  = "SELECT * FROM activeusers WHERE ipaddr = ?"
+                  ,["userById"]   = "SELECT * FROM users WHERE userid = ?"
+                  ,["updateUser"] = "UPDATE users totalTimeUsed = ? where userid = ?"
+                  ,["addActive"]  = "INSERT INTO activeusers (ipaddr, userid, logintime) VALUES (?,?,?)"
+                  ,["userByName"] = "SELECT * FROM users WHERE username = ?"
+                  ,["tarifById"]  = "SELECT * FROM tarifs WHERE tarifid = ?"
+                  }
+
 -- create environment object
 dbEnv = assert(luasql.sqlite())
 -- connect to data source
 dbCon = assert(dbEnv:connect(dbFile, 'NOCREATE'))
-	
+
+local key, val
+for key, val in pairs(statement)
+	do
+	if (type(val) == 'string')
+		then
+		statement[key] = dbCon:prepare(val)
+		end
+	end
+
 commonHeaders   = {["Content-type"] = "text/html; charset=utf-8"
                         }
 function redirectHeaders(path)
