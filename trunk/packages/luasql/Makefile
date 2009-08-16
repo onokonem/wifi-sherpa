@@ -19,15 +19,18 @@ include $(INCLUDE_DIR)/package.mk
 
 PKG_INSTALL=1
 
-MAKE_FLAGS+= PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -L$(STAGING_DIR)/usr/lib -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic"
+DRIVER_LIBS_LIST=""
+
+MAKE_FLAGS+= PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -L$(STAGING_DIR)/usr/lib -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic" DRIVER_LIBS="$(DRIVER_LIBS_LIST)"
 
 define Build/Configure
         echo "CALL luasql/Build/Configure"
 endef
 
 define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) lib
+	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS)
 endef
+
 
 define Package/luasql/Default
 	SECTION:=fwwrt
@@ -42,48 +45,52 @@ define Package/luasql-sqlite2
 	$(call Package/luasql/Default)
 	TITLE+=, sqlite2 driver
 	DEPENDS+= +libsqlite2
-	MAKE_FLAGS+= T="sqlite" DRIVER_LIBS=" -lsqlite"
+	DRIVER_LIBS_LIST+=" -lsqlite"
+	MAKE_FLAGS+= sqlite_lib sqlite_install
 endef
 
 define Package/luasql-sqlite2/install
-	$(INSTALL_DIR) $(1)/usr/lib/lua/
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luasql/
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/luasql/sqlite.sq $(1)/usr/lib/lua/luasql/
 endef
 
 define Package/luasql-sqlite3
 	$(call Package/luasql/Default)
 	TITLE+=, sqlite3 driver
 	DEPENDS+= +libsqlite3
-	MAKE_FLAGS+= T="sqlite3" DRIVER_LIBS=" -lsqlite3"
+	DRIVER_LIBS_LIST+=" -lsqlite3"
+	MAKE_FLAGS+= sqlite3_lib sqlite3_install
 endef
 
 define Package/luasql-sqlite3/install
-	$(INSTALL_DIR) $(1)/usr/lib/lua/
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luasql/
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/luasql/sqlite3.sq $(1)/usr/lib/lua/luasql/
 endef
 
 define Package/luasql-mysql
 	$(call Package/luasql/Default)
 	TITLE+=, mysql driver
 	DEPENDS+= +libmysqlclient
-	MAKE_FLAGS+= T="mysql" DRIVER_LIBS=" -lmysqlclient -lz"
+	DRIVER_LIBS_LIST+=" -lmysqlclient -lz"
+	MAKE_FLAGS+= mysql_lib mysql_install
 endef
 
 define Package/luasql-mysql/install
-	$(INSTALL_DIR) $(1)/usr/lib/lua/
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luasql/
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/luasql/mysql.sq $(1)/usr/lib/lua/luasql/
 endef
 
 define Package/luasql-pgsql
 	$(call Package/luasql/Default)
 	TITLE+=, postgres driver
 	DEPENDS+= +libpq
-	MAKE_FLAGS+= T="pgsql" DRIVER_LIBS=" -lpq"
+	DRIVER_LIBS_LIST+=" -lpq"
+	MAKE_FLAGS+= postgres_lib postgres_install
 endef
 
 define Package/luasql-pgsql/install
-	$(INSTALL_DIR) $(1)/usr/lib/lua/
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luasql/
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/luasql/postgres.sq $(1)/usr/lib/lua/luasql/
 endef
 
 $(eval $(call BuildPackage,luasql-sqlite2))
