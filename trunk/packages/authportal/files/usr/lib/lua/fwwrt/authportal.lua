@@ -41,8 +41,7 @@ local redirectBody = "<htmp><head><title>302 Redirect</title></head><body>302 Re
 function yeldSleep()
 	fwwrt.util.yeldSleep(loginDelay, "")
 	coroutine.yield(redirectBody)
-	end
-
+end
 
 function showLogoutForm(wsapi_env) --showlogin
 	local template  = fwwrt.util.fileToVariable(webDir.."/showLogout.template")
@@ -65,17 +64,35 @@ function processLogoutForm(wsapi_env) --showlogin
 end
 
 function doLogout(ip)
---	if ip ~= nil
---		select from activeusers and operate values for all of them
---		dbCon:exec[[delete from activeusers]]
---	else
---			local stmt = dbCon:prepare[[ SELECT * FROM operators WHERE username = :user AND pass = :pass ]]
-
-			return true
-
+	local cur
+	local userCur
+	local userRow
+	local reset
+	if ip == nil then
+		cur = assert (dbCon:execute"SELECT * FROM activeusers")
+	else
+		cur = assert (dbCon:execute(string.format("SELECT * FROM activeusers WHERE ipaddr = '%s'", ip)))
+	end
+	local row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
+	while row do
+		usersCur = 
+		assert (dbCon:execute(string.format("SELECT * FROM users WHERE userid = '%s'", row.userid)))
+		userRow = usersCur:fetch ({}, "a")
+		reset = assert (dbCon:execute([[UPDATE users totalTimeUsed = '%s' where userid = '%s']], 
+		os.time() - row.logintime + userRow.totalTimeUsed, row.userid ))
+		row = cur:fetch (row, "a")	-- reusing the table of results
+	end
+	cur:close()
+	userCur:close()
+	return true
 end
 
--- do function doLogin()
+function doLogin(ip, userid)
+	local cur = assert (dbCon:execute(string.format([[INSERT INTO activeusers (ipaddr, userid, logintime)
+	VALUES ('%s','%s','%s')  ]], ip, userid, os.time())))
+	cur:close()
+	return true
+end
 
 function showLoginForm(wsapi_env, reason, message) --showlogin
     reason = reason or ""
@@ -116,20 +133,29 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 		return 302, redirectHeaders("http://"..hostname.."/?badRequest"), coroutine.wrap(yeldSleep)
     	end
 
-    authorized, message = pcall(checkLogin, request.POST.username)
+    authorized, message = pcall(checkLogin, request.POST.username) -- autorized contains userid
 
-    if (not authorized)
-    	then
+    if (not authorized) then
 		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..message)
 		return showLoginForm(wsapi_env, "badLogin", message)
-		end
-
-    if (not fwwrt.iptkeeper.logIpIn(wsapi_env.REMOTE_ADDR, os.time()+60*10))
+	end
+	
+	local userCur = assert (con:execute(string.format("SELECT * FROM users WHERE userid = '%s'", authorized)))
+	local userRow = userCur:fetch ({}, "a")
+	local tarifCur = assert (con:execute(string.format("SELECT * FROM tarifs WHERE tarifid = '%s'",
+	userRow.tarifid)))
+	local tarifRow = tarifCur:fetch ({}, "a")
+	
+	local expire = os.time() + tarifRow.totalTimeLim - userRow.totalTimeUsed
+	
+    if (not fwwrt.iptkeeper.logIpIn(wsapi_env.REMOTE_ADDR, expire))
     	then
 		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': address unknown")
 		return showLoginForm(wsapi_env, "unknownIP")
-		end
-
+	end
+	
+	doLogin(wsapi_env.REMOTE_ADDR, authorized)
+	
 	local template = fwwrt.util.fileToVariable(webDir.."/showLogout.template")
 	
 	-- fwwrt.util.logger("LOG_INFO", "User '"..request.POST.username.."' logged in on '"..wsapi_env.REMOTE_ADDR.."'")
