@@ -19,7 +19,8 @@ include $(INCLUDE_DIR)/package.mk
 
 PKG_INSTALL=1
 
-DRIVER_LIBS_LIST=""
+DRIVER_LIBS_LIST= 
+INSTALL_FLAGS= 
 
 MAKE_FLAGS+= PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -L$(STAGING_DIR)/usr/lib -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic" DRIVER_LIBS="$(DRIVER_LIBS_LIST)"
 
@@ -29,6 +30,10 @@ endef
 
 define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS)
+endef
+
+define Build/Install
+	$(MAKE) -C $(PKG_BUILD_DIR) $(INSTALL_FLAGS)
 endef
 
 
@@ -45,8 +50,9 @@ define Package/luasql-sqlite2
 	$(call Package/luasql/Default)
 	TITLE+=, sqlite2 driver
 	DEPENDS+= +libsqlite2
-	DRIVER_LIBS_LIST+=" -lsqlite"
-	MAKE_FLAGS+= sqlite_lib sqlite_install
+	DRIVER_LIBS_LIST+= -lsqlite
+	MAKE_FLAGS+= sqlite_lib
+	INSTALL_FLAGS+= sqlite_install
 endef
 
 define Package/luasql-sqlite2/install
@@ -58,8 +64,9 @@ define Package/luasql-sqlite3
 	$(call Package/luasql/Default)
 	TITLE+=, sqlite3 driver
 	DEPENDS+= +libsqlite3
-	DRIVER_LIBS_LIST+=" -lsqlite3"
-	MAKE_FLAGS+= sqlite3_lib sqlite3_install
+	DRIVER_LIBS_LIST+= -lsqlite3
+	MAKE_FLAGS+= sqlite3_lib
+	INSTALL_FLAGS+= sqlite3_install
 endef
 
 define Package/luasql-sqlite3/install
@@ -71,8 +78,9 @@ define Package/luasql-mysql
 	$(call Package/luasql/Default)
 	TITLE+=, mysql driver
 	DEPENDS+= +libmysqlclient
-	DRIVER_LIBS_LIST+=" -lmysqlclient -lz"
-	MAKE_FLAGS+= mysql_lib mysql_install
+	DRIVER_LIBS_LIST+= -lmysqlclient -lz
+	MAKE_FLAGS+= mysql_lib
+	INSTALL_FLAGS+= mysql_install
 endef
 
 define Package/luasql-mysql/install
@@ -84,8 +92,9 @@ define Package/luasql-pgsql
 	$(call Package/luasql/Default)
 	TITLE+=, postgres driver
 	DEPENDS+= +libpq
-	DRIVER_LIBS_LIST+=" -lpq"
-	MAKE_FLAGS+= postgres_lib postgres_install
+	DRIVER_LIBS_LIST+= -lpq
+	MAKE_FLAGS+= postgres_lib
+	INSTALL_FLAGS+= postgres_install
 endef
 
 define Package/luasql-pgsql/install
