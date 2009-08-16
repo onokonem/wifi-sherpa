@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luasql
 PKG_VERSION:=2.1.1
-PKG_RELEASE:=1
+PKG_RELEASE:=3
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://luaforge.net/frs/download.php/2686/
@@ -30,13 +30,19 @@ MAKE_FLAGS += PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET
 #	$(call Build/Install/Default)
 #endef
 
+define Package/luasql/Default
+	SUBMENU:=Lua
+	SECTION:=fwwrt
+	CATEGORY:=FWWRT
+	TITLE:=Database connectivity for the Lua
+	URL:=http://www.keplerproject.org/luasql/
+	DEPENDS:=+lua
+endef
+
 define Package/luasql-sqlite2
-  SUBMENU:=Lua
-  SECTION:=fwwrt
-  CATEGORY:=FWWRT
-  TITLE:=Database connectivity for the Lua, sqlite2 driver
-  URL:=http://www.keplerproject.org/luasql/
-  DEPENDS:=+lua +libsqlite
+	$(call Package/luasql/Default)
+	TITLE+=, sqlite2 driver
+	DEPENDS+= +libsqlite
 endef
 
 define Build/luasql-sqlite2/Compile
@@ -52,12 +58,9 @@ endef
 
 
 define Package/luasql-sqlite3
-  SUBMENU:=Lua
-  SECTION:=fwwrt
-  CATEGORY:=FWWRT
-  TITLE:=Database connectivity for the Lua, sqlite3 driver
-  URL:=http://www.keplerproject.org/luasql/
-  DEPENDS:=+lua +libsqlite3
+	$(call Package/luasql/Default)
+	TITLE+=, sqlite3 driver
+	DEPENDS+= +libsqlite3
 endef
 
 define Build/luasql-sqlite3/Compile
@@ -71,12 +74,9 @@ define Package/luasql-sqlite3/install
 endef
 
 define Package/luasql-mysql
-  SUBMENU:=Lua
-  SECTION:=fwwrt
-  CATEGORY:=FWWRT
-  TITLE:=Database connectivity for the Lua, mysql driver
-  URL:=http://www.keplerproject.org/luasql/
-  DEPENDS:=+lua +libmysql
+	$(call Package/luasql/Default)
+	TITLE+=, mysql driver
+	DEPENDS+= +libmysql
 endef
 
 define Build/luasql-mysql/Compile
@@ -91,12 +91,9 @@ endef
 
 
 define Package/luasql-pgsql
-  SUBMENU:=Lua
-  SECTION:=fwwrt
-  CATEGORY:=FWWRT
-  TITLE:=Database connectivity for the Lua, postgres driver
-  URL:=http://www.keplerproject.org/luasql/
-  DEPENDS:=+lua +libpgsql
+	$(call Package/luasql/Default)
+	TITLE+=, postgres driver
+	DEPENDS+= +libpgsql
 endef
 
 define Build/luasql-pgsql/Compile
@@ -109,4 +106,7 @@ define Package/luasql-pgsql/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
 endef
 
-$(eval $(call BuildPackage,luasql))
+$(eval $(call BuildPackage,luasql-sqlite2))
+$(eval $(call BuildPackage,luasql-sqlite3))
+$(eval $(call BuildPackage,luasql-mysql))
+$(eval $(call BuildPackage,luasql-pgsql))
