@@ -131,7 +131,7 @@ function processLoginForm(wsapi_env) --doLogin, show logout
     	then
 		fwwrt.util.logger("LOG_ERR", "Bad request from '"..wsapi_env.REMOTE_ADDR.."'")
 		return 302, redirectHeaders("http://"..hostname.."/?badRequest"), coroutine.wrap(yeldSleep)
-    	end
+    end
 
     authorized, message = pcall(checkLogin, request.POST.username) -- autorized contains userid
 
@@ -147,6 +147,9 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 	local tarifRow = tarifCur:fetch ({}, "a")
 	
 	local expire = os.time() + tarifRow.totalTimeLim - userRow.totalTimeUsed
+	
+	tarifCur:close()
+	userCur:close()
 	
     if (not fwwrt.iptkeeper.logIpIn(wsapi_env.REMOTE_ADDR, expire))
     	then
