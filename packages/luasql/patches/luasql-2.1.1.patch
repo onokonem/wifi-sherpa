@@ -1,14 +1,12 @@
 diff -ubBENdr luasql-2.1.1.orig/config luasql-2.1.1/config
 --- luasql-2.1.1.orig/config	2009-08-08 02:36:21.000000000 +0400
-+++ luasql-2.1.1/config	2009-08-12 22:09:21.000000000 +0400
-@@ -3,19 +3,19 @@
- #T= oci8
++++ luasql-2.1.1/config	2009-08-16 17:57:37.000000000 +0400
+@@ -4,18 +4,18 @@
  #T= odbc
  #T= postgres
--#T= sqlite
+ #T= sqlite
 -T=sqlite3
-+T= sqlite
-+#T=sqlite3
++#T= sqlite3
  
  # Installation directories
  
@@ -26,17 +24,12 @@ diff -ubBENdr luasql-2.1.1.orig/config luasql-2.1.1/config
  
  # Lua includes directory
  LUA_INC= $(PREFIX)/include
-@@ -42,18 +42,18 @@
- #DRIVER_LIBS= -L/usr/local/pgsql/lib -lpq
- #DRIVER_INCS= -I/usr/local/pgsql/include
- ######## SQLite
--#DRIVER_LIBS= -lsqlite
--#DRIVER_INCS=
--######## SQLite3 
+@@ -45,15 +45,15 @@
+ #DRIVER_LIBS= -lsqlite
+ #DRIVER_INCS=
+ ######## SQLite3 
 -DRIVER_LIBS= -L/opt/local/lib -lsqlite3
-+DRIVER_LIBS= -L/opt/local/lib -lsqlite
- DRIVER_INCS= -I/opt/local/include
-+######## SQLite3 
+-DRIVER_INCS= -I/opt/local/include
 +#DRIVER_LIBS= -L/opt/local/lib -lsqlite3
 +#DRIVER_INCS= -I/opt/local/include
  ######## ODBC
@@ -46,7 +39,7 @@ diff -ubBENdr luasql-2.1.1.orig/config luasql-2.1.1/config
  WARN= -Wall -Wmissing-prototypes -Wmissing-declarations -ansi -pedantic
  INCS= -I$(LUA_INC)
 -CFLAGS= -O2 $(WARN) -I$(COMPAT_DIR) $(DRIVER_INCS) $(INCS) $(DEFS)
-+CFLAGS= $(WARN) -I$(COMPAT_DIR) $(DRIVER_INCS) $(INCS) $(DEFS)
++CFLAGS= -Os $(WARN) -I$(COMPAT_DIR) $(DRIVER_INCS) $(INCS) $(DEFS)
  CC= gcc
  
  # $Id: config,v 1.8 2007/10/27 22:55:27 carregal Exp $
