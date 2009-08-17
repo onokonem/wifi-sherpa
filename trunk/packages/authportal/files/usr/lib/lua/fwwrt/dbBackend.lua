@@ -29,14 +29,12 @@ local function replaceQM(statement, startSearch, replacement)
 sqlite2PreparedStatementMT.unbind  = function(self, ...) self.binded = nil return true end
 --
 sqlite2PreparedStatementMT.bind    = function(self, ...)
-    self.binded = self.backend
+    self.binded = string.gsub(self.backend, "[\n%s]+", " ")
     
-    local params = {}
     local startSearch = 1
-
 	for i,v in ipairs(arg)
 		do
-		if((v[1] == "BLOB") or (v[1] == "TEXT")) then
+		if((v[1] == "TEXT") or (v[1] == "BLOB")) then
 			self.binded, startSearch = replaceQM(self.binded, startSearch, self.parent.parent:quotestr(tostring(v[2])))
 		elseif((v[1] == "FLOAT") or (v[1] == "INTEGER")) then
 			self.binded, startSearch = replaceQM(self.binded, startSearch, tostring(tonumber(v[2])))
@@ -104,4 +102,10 @@ local dbCon = assert(dbEnv:connect(fwwrt.util.uciGet('fwwrt.authportal.dbFile', 
 
 function connect()
 	return dbCon
+	end
+
+
+function bindAndExecute(statement, ...)
+    assert(statement.bind(...))
+    return assert(statement.execute())
 	end
