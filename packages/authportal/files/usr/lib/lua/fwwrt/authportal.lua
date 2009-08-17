@@ -123,7 +123,7 @@ function doLogout(ip)
 end
 
 function doLogin(ip, userid)
-	local cur = fwwrt.dbBackend.bindAndExecute(statements.addActive, 
+	local cur = fwwrt.dbBackend.bindAndExecute(statements.addActive
 	                                          ,{{'TEXT'    ,ip}
 	                                           ,{'INTEGER' ,userid}
 	                                           ,{'INTEGER' ,os.time()}
