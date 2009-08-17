@@ -33,7 +33,7 @@ local statement = {["allActive"]  = "SELECT * FROM activeusers"
                   ,["tarifById"]  = "SELECT * FROM tarifs WHERE tarifid = ?"
                   }
 
-dbCon = fwwrt.dbBackend.connection()
+dbCon = fwwrt.dbBackend.connect()
 
 local key, val
 for key, val in pairs(statement)
