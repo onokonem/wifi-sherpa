@@ -223,9 +223,9 @@ end
 function processBasicAdminForm(wsapi_env) --main
 	local request  = wsapi.request.new(wsapi_env)
 	local trueadmin = false
-	if checkCookie(wsapi_env.HTTP_COOKIE) = nil then
-		if request.method ~= 'POST' or request.POST.oplogin == nil -- нет куки, не логинилсо
-		or checkOpLogin(request.POST.opname, request.POST.oppass) = nil then -- логинилсо неудачно 
+	if (checkCookie(wsapi_env.HTTP_COOKIE) == nil) then
+		if (request.method ~= 'POST' or request.POST.oplogin == nil) -- нет куки, не логинилсо
+		or (checkOpLogin(request.POST.opname, request.POST.oppass) == nil) then -- логинилсо неудачно 
 			return showAdminLogin(wsapi_env)
 		else  -- успешн логин
 			trueadmin = true -- избыточность

@@ -78,24 +78,24 @@ sqlite2EnvMT.connect  = function(self, ...)
     return wrap(self, self.backend:connect(...), sqlite2ConnMT)
 	end
 
-local dbInit = {}
+local dbList = {}
 --
-dbInit.sqlite2 = function()
+dbList.sqlite2 = function()
 	require "luasql.sqlite"
 	return wrap(nil, luasql.sqlite(), sqlite2EnvMT)
 	end
 --
-dbInit.sqlite3 = function()
+dbList.sqlite3 = function()
 	require "luasql.sqlite3"
 	return luasql.sqlite3()
 	end
 
 local function dbInit(dbType)
-	if (not dbInit[dbType])
+	if (not dbList[dbType])
 		then
 		error(string.format("DB type '%s' is not defined", tostring(dbType)))
 		end
-	return dbInit[dbType]()
+	return dbList[dbType]()
 	end
 
 local dbEnv = assert(dbInit(fwwrt.util.uciGet('fwwrt.authportal.dbType', 'string')))
