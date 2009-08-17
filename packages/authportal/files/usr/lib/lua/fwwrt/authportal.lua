@@ -24,13 +24,32 @@ local loginDelay = fwwrt.util.uciGet('fwwrt.authportal.logindelay', 'number')
 local dbFile     = fwwrt.util.uciGet('fwwrt.authportal.dbFile',     'string')
 --local ssid       = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string')
 
-local statement = {["allActive"]  = "SELECT * FROM activeusers"
-                  ,["oneActive"]  = "SELECT * FROM activeusers WHERE ipaddr = ?"
-                  ,["userById"]   = "SELECT * FROM users WHERE userid = ?"
-                  ,["updateUser"] = "UPDATE users totalTimeUsed = ? where userid = ?"
-                  ,["addActive"]  = "INSERT INTO activeusers (ipaddr, userid, logintime) VALUES (?,?,?)"
-                  ,["userByName"] = "SELECT * FROM users WHERE username = ?"
-                  ,["tarifById"]  = "SELECT * FROM tarifs WHERE tarifid = ?"
+local statement = {allActive  = [[SELECT DISTINCT
+                                  *
+                                  FROM       activeusers AS a
+                                  INNER JOIN users       AS u ON (u.userid = a.userid)
+                                ]]
+                  ,oneActive  = [[SELECT DISTINCT
+                                  *
+                                  FROM       activeusers AS a
+                                  INNER JOIN users       AS u ON (u.userid = a.userid)
+                                  WHERE a.ipaddr = ?
+                                ]]
+                  ,userById   = [[SELECT DISTINCT
+                                  * 
+                                  FROM       users  AS u
+                                  INNER JOIN tarifs AS t ON (t.tarifid = u.tarifid)
+                                  WHERE u.userid = ?
+                                ]]
+                  ,updateUser = "UPDATE users totalTimeUsed = ? where userid = ?"
+                  ,addActive  = "INSERT INTO activeusers (ipaddr, userid, logintime) VALUES (?,?,?)"
+                  ,userByName = [[SELECT DISTINCT
+                                  * 
+                                  FROM       users  AS u
+                                  INNER JOIN tarifs AS t ON (t.tarifid = u.tarifid)
+                                  WHERE u.username = ?
+                                ]]
+                  ,tarifById  = "SELECT * FROM tarifs WHERE tarifid = ?"
                   }
 
 dbCon = fwwrt.dbBackend.connect()
@@ -85,17 +104,17 @@ function doLogout(ip)
 	local userRow
 	local reset
 	if ip == nil then
-		cur = assert (dbCon:execute"SELECT * FROM activeusers")
+		cur = fwwrt.dbBackend.bindAndExecute(statement.allActive, {})
 	else
-		cur = assert (dbCon:execute(string.format("SELECT * FROM activeusers WHERE ipaddr = '%s'", ip)))
+		cur = fwwrt.dbBackend.bindAndExecute(statement.oneActive, {{'TEXT', ip}})
 	end
 	local row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
 	while row do
-		usersCur = 
-		assert (dbCon:execute(string.format("SELECT * FROM users WHERE userid = '%s'", row.userid)))
-		userRow = usersCur:fetch ({}, "a")
-		reset = assert (dbCon:execute([[UPDATE users totalTimeUsed = '%s' where userid = '%s']], 
-		os.time() - row.logintime + userRow.totalTimeUsed, row.userid ))
+		reset    = fwwrt.dbBackend.bindAndExecute(statements.updateUser
+		                                         ,{{'INTEGER' ,os.time() - row.logintime +row.totalTimeUsed}
+		                                          ,{'INTEGER' ,row.userid}
+		                                          }
+		                                         )
 		row = cur:fetch (row, "a")	-- reusing the table of results
 	end
 	cur:close()
@@ -104,8 +123,12 @@ function doLogout(ip)
 end
 
 function doLogin(ip, userid)
-	local cur = assert (dbCon:execute(string.format([[INSERT INTO activeusers (ipaddr, userid, logintime)
-	VALUES ('%s','%s','%s')  ]], ip, userid, os.time())))
+	local cur = fwwrt.dbBackend.bindAndExecute(statements.addActive, 
+	                                          ,{{'TEXT'    ,ip}
+	                                           ,{'INTEGER' ,userid}
+	                                           ,{'INTEGER' ,os.time()}
+	                                           }
+	                                          )
 	cur:close()
 	return true
 end
@@ -129,15 +152,15 @@ function showLoginForm(wsapi_env, reason, message) --showlogin
 end
 
 function checkLogin(user)
-	local cur = assert (dbCon:execute(string.format([[
-		select * from users where username = '%s']], user))
-	)
+	local cur = fwwrt.dbBackend.bindAndExecute(statements.userByName
+	                                          ,{{'TEXT', user}}
+	                                          )
 	-- row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
 	
-	local id = assert(cur:fetch({}, "a").userid, "user doesn't exist") --change userid to expire or hwatever
+	local info = assert(cur:fetch({}, "a"), "user doesn't exist") --change userid to expire or hwatever
 	
 	cur:close()
-	return id  
+	return info.userid, info.totalTimeUsed, info.totalTimeLim
 end
 
 function processLoginForm(wsapi_env) --doLogin, show logout
@@ -149,23 +172,15 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 		return 302, redirectHeaders("http://"..hostname.."/?badRequest"), coroutine.wrap(yeldSleep)
     end
 
-    authorized, message = pcall(checkLogin, request.POST.username) -- autorized contains userid
+    local authorized, totalTimeUsed, totalTimeLim = pcall(checkLogin, request.POST.username) -- autorized contains userid
 
     if (not authorized) then
-		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..message)
+		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..totalTimeUsed)
 		return showLoginForm(wsapi_env, "badLogin", message)
 	end
 	
-	local userCur = assert (con:execute(string.format("SELECT * FROM users WHERE userid = '%s'", authorized)))
-	local userRow = userCur:fetch ({}, "a")
-	local tarifCur = assert (con:execute(string.format("SELECT * FROM tarifs WHERE tarifid = '%s'",
-	userRow.tarifid)))
-	local tarifRow = tarifCur:fetch ({}, "a")
-	
-	local expire = os.time() + tarifRow.totalTimeLim - userRow.totalTimeUsed
-	
-	tarifCur:close()
-	userCur:close()
+
+	local expire = os.time() + totalTimeLim - totalTimeUsed
 	
     if (not fwwrt.iptkeeper.logIpIn(wsapi_env.REMOTE_ADDR, expire))
     	then
