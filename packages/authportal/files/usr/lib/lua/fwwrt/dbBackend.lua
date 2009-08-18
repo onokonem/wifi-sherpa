@@ -11,7 +11,9 @@ module("fwwrt.dbBackend", package.seeall)
 require "fwwrt.util"
 
 local function wrap(parent, backend, wrapper)
-    local w = {backend = backend, parent = parent}
+    local w = {parent  = parent
+              ,backend = backend
+              }
     local mt = getmetatable(w) or {}
     mt.__index = wrapper
     setmetatable(w, mt)
@@ -23,19 +25,21 @@ local sqlite2PreparedStatementMT = {}
 local function replaceQM(statement, startSearch, replacement)
 	local index = string.find(statement, "%?", startSearch)
 	if (index == nil) then error("No more parameters expected") end
-	return string.sub(statement, 1, index)..replacement..string.sub(statement, index + 1, -1), (index + string.len(replacement))
+	return string.sub(statement, 1, index - 1)..replacement..string.sub(statement, index + 1, -1), (index + string.len(replacement))
 	end
 --
 sqlite2PreparedStatementMT.unbind  = function(self, ...) self.binded = nil return true end
 --
 sqlite2PreparedStatementMT.bind    = function(self, ...)
     self.binded = string.gsub(self.backend, "[\n%s]+", " ")
-    
+
     local startSearch = 1
 	for i,v in ipairs(arg)
 		do
 		if((v[1] == "TEXT") or (v[1] == "BLOB")) then
-			self.binded, startSearch = replaceQM(self.binded, startSearch, self.parent.parent:quotestr(tostring(v[2])))
+			-- self.binded, startSearch = replaceQM(self.binded, startSearch, self.parent.parent:quotestr(tostring(v[2])))
+			-- Not safe, but no quotestr is provided by LuaSQL driver
+			self.binded, startSearch = replaceQM(self.binded, startSearch, "'"..tostring(v[2]).."'")
 		elseif((v[1] == "FLOAT") or (v[1] == "INTEGER")) then
 			self.binded, startSearch = replaceQM(self.binded, startSearch, tostring(tonumber(v[2])))
 		elseif(v[1] == "NULL") then
@@ -64,6 +68,7 @@ sqlite2ConnMT.setbusytimeout = function(self, ...) return self.backend:setbusyti
 sqlite2ConnMT.openblob       = function(self, ...) return self.backend:openblob(...)       end
 sqlite2ConnMT.zeroblob       = function(self, ...) return self.backend:zeroblob(...)       end
 sqlite2ConnMT.prepare        = function(self, statement)
+    assert(statement, "Statement must be specified")
     return wrap(self, statement, sqlite2PreparedStatementMT)
 	end
 
@@ -106,6 +111,6 @@ function connect()
 
 
 function bindAndExecute(statement, ...)
-    assert(statement.bind(...))
-    return assert(statement.execute())
+    assert(statement:bind(...))
+    return assert(statement:execute())
 	end
