@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # OpenWrt version: Kamikaze (r17264)
-# Sat Aug 15 13:21:47 2009
+# Tue Aug 18 17:30:30 2009
 #
 CONFIG_HAVE_DOT_CONFIG=y
 # CONFIG_TARGET_ppc40x is not set
@@ -1814,7 +1814,20 @@ CONFIG_PACKAGE_kmod-usb-core=y
 # CONFIG_PACKAGE_kmod-usb-net is not set
 CONFIG_PACKAGE_kmod-usb-ohci=y
 # CONFIG_PACKAGE_kmod-usb-printer is not set
-# CONFIG_PACKAGE_kmod-usb-serial is not set
+CONFIG_PACKAGE_kmod-usb-serial=y
+# CONFIG_PACKAGE_kmod-usb-serial-airprime is not set
+# CONFIG_PACKAGE_kmod-usb-serial-ark3116 is not set
+# CONFIG_PACKAGE_kmod-usb-serial-belkin is not set
+# CONFIG_PACKAGE_kmod-usb-serial-ch341 is not set
+# CONFIG_PACKAGE_kmod-usb-serial-cp2101 is not set
+# CONFIG_PACKAGE_kmod-usb-serial-ftdi is not set
+# CONFIG_PACKAGE_kmod-usb-serial-keyspan is not set
+# CONFIG_PACKAGE_kmod-usb-serial-mct is not set
+# CONFIG_PACKAGE_kmod-usb-serial-option is not set
+# CONFIG_PACKAGE_kmod-usb-serial-oti6858 is not set
+# CONFIG_PACKAGE_kmod-usb-serial-pl2303 is not set
+# CONFIG_PACKAGE_kmod-usb-serial-sierrawireless is not set
+# CONFIG_PACKAGE_kmod-usb-serial-visor is not set
 CONFIG_PACKAGE_kmod-usb-storage=y
 # CONFIG_PACKAGE_kmod-usb-uhci is not set
 # CONFIG_PACKAGE_kmod-usb-video is not set
@@ -1912,20 +1925,23 @@ CONFIG_PACKAGE_coxpcall=y
 CONFIG_PACKAGE_lsyslog=y
 CONFIG_PACKAGE_luafilesystem=y
 CONFIG_PACKAGE_luasec=y
-CONFIG_PACKAGE_luasql=y
+# CONFIG_PACKAGE_luasql-mysql is not set
+# CONFIG_PACKAGE_luasql-pgsql is not set
+CONFIG_PACKAGE_luasql-sqlite2=y
+CONFIG_PACKAGE_luasql-sqlite3=y
 # CONFIG_PACKAGE_orbit is not set
 # CONFIG_PACKAGE_remdebugger is not set
 CONFIG_PACKAGE_wsapi=y
 CONFIG_PACKAGE_xavante-ssl=y
 CONFIG_PACKAGE_authorized_keys=y
 CONFIG_PACKAGE_authportal=y
-CONFIG_PACKAGE_blinkled=y
+# CONFIG_PACKAGE_blinkled is not set
 # CONFIG_PACKAGE_fakedns is not set
 CONFIG_PACKAGE_fwwrt-uci-config=y
 # CONFIG_PACKAGE_libusb-compat is not set
 CONFIG_PACKAGE_libusb1=y
 CONFIG_PACKAGE_madwimax=y
-CONFIG_PACKAGE_usbboot-ohci=y
+# CONFIG_PACKAGE_usbboot-ohci is not set
 # CONFIG_PACKAGE_wimaxwan is not set
 
 #
