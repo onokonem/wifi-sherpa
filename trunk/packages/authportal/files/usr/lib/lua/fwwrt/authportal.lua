@@ -69,7 +69,7 @@ function redirectHeaders(path)
 	return {["Content-type"] = "text/html; charset=utf-8"
 	       ,["Location"]     = path
 	       }
-	end
+end
 
 local redirectBody = "<htmp><head><title>302 Redirect</title></head><body>302 Redirect</body></html>"
 
@@ -206,5 +206,5 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 		end
 	
 	return 200, commonHeaders, coroutine.wrap(process)
-	end
+end
 
