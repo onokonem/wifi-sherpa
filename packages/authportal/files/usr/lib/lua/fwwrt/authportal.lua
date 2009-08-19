@@ -56,8 +56,9 @@ local statement = {allActive  = [[SELECT DISTINCT
                                   INNER JOIN tarifs AS t ON (t.tarifid = u.tarifid)
                                   WHERE u.userid = ?
                                 ]]
-                  ,updateUser = "UPDATE users totalTimeUsed = ? where userid = ?"
+                  ,updateUser = "UPDATE users set totalTimeUsed = ? where userid = ?"
                   ,addActive  = "INSERT INTO activeusers (ipaddr, userid, logintime) VALUES (?,?,?)"
+				  ,delActive  = "DELETE FROM activeusers WHERE userid = ?"
                   ,userByName = [[SELECT DISTINCT
                                    u.userid          AS userid
                                   ,t.totalTimeLim    AS totalTimeLim
@@ -86,8 +87,8 @@ for key, val in pairs(statement)
 	if (type(val) == 'string')
 		then
 		statement[key] = dbCon:prepare(val)
-		end
 	end
+end
 
 commonHeaders   = {["Content-type"] = "text/html; charset=utf-8"
                         }
@@ -125,29 +126,40 @@ function processLogoutForm(wsapi_env) --showlogin
 end
 
 function doLogout(ip)
-	local cur
 	local userCur
 	local userRow
-	local reset
-	if ip == nil then
-		cur = fwwrt.dbBackend.bindAndExecute(statement.allActive, {})
-	else
-		cur = fwwrt.dbBackend.bindAndExecute(statement.oneActive, {'TEXT', ip})
-	end
+	local cur = fwwrt.dbBackend.bindAndExecute(statement.oneActive, {'TEXT', ip})
 	local row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
-	while row do
-		reset    = fwwrt.dbBackend.bindAndExecute(statement.updateUser
-		                                         ,{'INTEGER' ,os.time() - row.logintime +row.totalTimeUsed}
-		                                         ,{'INTEGER' ,row.userid}
-		                                         )
-		row = cur:fetch (row, "a")	-- reusing the table of results
-	end
 	cur:close()
-	return true
+	doLogoutId(row)
+end
+
+function doLogoutId(row)
+	local reset    = fwwrt.dbBackend.bindAndExecute(statement.updateUser 
+		--,updateUser = "UPDATE users totalTimeUsed = ? where userid = ?"
+		                                  ,{'INTEGER' ,os.time() - row.logintime + row.totalTimeUsed}
+		                                  ,{'INTEGER' ,row.userid}
+		                                   )
+	local activesCur = fwwrt.dbBackend.bindAndExecute(statement.delActive
+	--	  ,delActive  = "DELETE FROM activeusers WHERE userid = ?"	
+	                                          ,{'INTEGER'    ,row.userid}
+	                                          )
+end
+
+function doLogoutAll()
+	local cur = fwwrt.dbBackend.bindAndExecute(statement.allActive)
+	local row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
+	cur:close()
+	while row do
+		doLogoutId(row)
+		cur = fwwrt.dbBackend.bindAndExecute(statement.allActive)
+		row = cur:fetch (row, "a")	-- reusing the table of results
+		cur:close()
+	end
 end
 
 function doLogin(ip, userid)
-	local cur = fwwrt.dbBackend.bindAndExecute(statement.addActive
+	local cur = fwwrt.dbBackend.bindAndExecute(statement.addActive -- and no assert here!
 	                                          ,{'TEXT'    ,ip}
 	                                          ,{'INTEGER' ,userid}
 	                                          ,{'INTEGER' ,os.time()}
@@ -203,6 +215,9 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 	
 
 	local expire = os.time() + totalTimeLim - totalTimeUsed
+	print("limit = '"..totalTimeLim.."' used = '"..totalTimeUsed..
+	"' lim - used = '"..totalTimeLim-totalTimeUsed.."'")
+	print(request.POST.username .." expires on "..os.date(t, expire).."\n logged in on "..os.date())
 	
     if (not fwwrt.iptkeeper.logIpIn(wsapi_env.REMOTE_ADDR, expire))
     	then
@@ -210,7 +225,7 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 		return showLoginForm(wsapi_env, "unknownIP")
 	end
 	
-	doLogin(wsapi_env.REMOTE_ADDR, userid)
+	doLogin(wsapi_env.REMOTE_ADDR, userid) -- no pcall here!
 	
 	local template = fwwrt.util.fileToVariable(webDir.."/showLogout.template")
 	
@@ -230,3 +245,4 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 	return 200, commonHeaders, coroutine.wrap(process)
 end
 
+doLogoutAll()
