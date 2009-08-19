@@ -88,7 +88,8 @@ local servers = {["*"] = {[fwwrt.util.uciGet('fwwrt.ports.unauth', 'number')] =
                                             }
                                    }
                          ,[fwwrt.util.uciGet('fwwrt.ports.authSSL', 'number')] = 
-                                   {rules = {catchAll(fwwrt.basicadmin.processBacisAdminForm)
+                                   {rules = {adminRule
+                                            ,catchAll(fwwrt.authportal.processLogoutForm)
                                             }
                                    ,ssl   = ssl
                                    }
