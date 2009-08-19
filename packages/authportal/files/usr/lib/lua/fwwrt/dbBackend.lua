@@ -31,9 +31,8 @@ local function replaceQM(statement, startSearch, replacement)
 sqlite2PreparedStatementMT.unbind  = function(self, ...) self.binded = nil return true end
 --
 sqlite2PreparedStatementMT.bind    = function(self, ...)
-    self.binded = string.gsub(self.backend, "[\n%s]+", " ")
-
-    local startSearch = 1
+	self.binded = string.gsub(self.backend, "[\n%s]+", " ")
+	local startSearch = 1
 	for i,v in ipairs(arg)
 		do
 		if((v[1] == "TEXT") or (v[1] == "BLOB")) then
@@ -43,13 +42,14 @@ sqlite2PreparedStatementMT.bind    = function(self, ...)
 		elseif((v[1] == "FLOAT") or (v[1] == "INTEGER")) then
 			self.binded, startSearch = replaceQM(self.binded, startSearch, tostring(tonumber(v[2])))
 		elseif((v[1] == "BOOLEAN") or (v[1] == "BOOL")) then
-			self.binded, startSearch = replaceQM(self.binded, startSearch, (v[2] and 'true' or 'false'))
+			self.binded, startSearch = replaceQM(self.binded, startSearch, (v[2] and "'true'" or "'false'"))
 		elseif(v[1] == "NULL") then
 			self.binded, startSearch = replaceQM(self.binded, startSearch, "NULL")
 		else
 			error(string.format("Type '%s' is unknown", tostring(v[1])))
 			end
 		end
+	print(self.binded)
 	return self
 	end
 --
