@@ -143,7 +143,6 @@ function doLogout(ip)
 		row = cur:fetch (row, "a")	-- reusing the table of results
 	end
 	cur:close()
-	userCur:close()
 	return true
 end
 
@@ -153,8 +152,7 @@ function doLogin(ip, userid)
 	                                          ,{'INTEGER' ,userid}
 	                                          ,{'INTEGER' ,os.time()}
 	                                          )
-	cur:close()
-	return true
+	return (cur == 1)
 end
 
 function showLoginForm(wsapi_env, reason, message) --showlogin
