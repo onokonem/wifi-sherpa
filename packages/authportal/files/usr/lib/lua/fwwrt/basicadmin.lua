@@ -15,6 +15,7 @@ require "fwwrt.authportal"
 local webDir     = fwwrt.util.uciGet('httpd.httpd.home',            'string')
 local hostname   = fwwrt.util.uciGet('fwwrt.authportal.httpsName',  'string')
 --local ssid       = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string')
+dbCon = fwwrt.dbBackend.connect()
 
 function checkOpLogin(user, pass)
 --	local stmt = dbCon:prepare[[ SELECT * FROM operators WHERE username = :user AND pass = :pass ]]
@@ -28,12 +29,12 @@ function checkOpLogin(user, pass)
 	-- row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
 	
 	local cur = assert (dbCon:execute(string.format([[
-		select * from operators where opname = '%s' and oppass = '%s']], user, pass))
+         select * from operators where opname = '%s' and oppass = '%s']], user, pass))
 	)
 	-- row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
-	local id = assert(cur:fetch({}, "a").opid)
+	local result = assert(cur:fetch({}, "a"), "no matches in database!")
 	cur:close()
-	return id
+	return result.opid
 end
 
 function insertUser(user) --should sheck values and return errors correctly todo
@@ -224,20 +225,24 @@ function processBasicAdminForm(wsapi_env) --main
 	local request  = wsapi.request.new(wsapi_env)
 	local trueadmin = false
 	if (checkCookie(wsapi_env.HTTP_COOKIE) == nil) then
-		if (request.method ~= 'POST' or request.POST.oplogin == nil) -- нет куки, не логинилсо
-		or (checkOpLogin(request.POST.opname, request.POST.oppass) == nil) then -- логинилсо неудачно 
+--		print("cookie == nil")
+		if (request.method ~= 'POST' or request.POST.oplogin == nil) -- no cookie, no login attempt
+		or (pcall(checkOpLogin, request.POST.opname, request.POST.oppass) == false) then -- login failed 
 			return showAdminLogin(wsapi_env)
-		else  -- успешн логин
-			trueadmin = true -- избыточность
+		else  -- login success
+			trueadmin = true -- no need?
+--			print("login – ok")
 		end
 	else
-		trueadmin = true -- избыточность
+--		print("cookie – ok")
+		trueadmin = true -- no need?
 	end
 	
-	if (request.method ~= 'POST' and trueadmin == true)
-		then return showBasicAdminForm(wsapi_env) 
+	if (request.POST.count == nil and trueadmin == true) then
+--		print("show basic admin form")
+		return showBasicAdminForm(wsapi_env) 
 	end
-
+--	print("request.method = '"..request.method.."'\ntrueadmin = '"..tostring(trueadmin).."'")
     local callDoAdmin = function() return doAdmin(wsapi_env, request) end
     return 200, makeCookieHeaders(wsapi_env), coroutine.wrap(callDoAdmin)
 end
