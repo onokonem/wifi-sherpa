@@ -42,6 +42,8 @@ sqlite2PreparedStatementMT.bind    = function(self, ...)
 			self.binded, startSearch = replaceQM(self.binded, startSearch, "'"..tostring(v[2]).."'")
 		elseif((v[1] == "FLOAT") or (v[1] == "INTEGER")) then
 			self.binded, startSearch = replaceQM(self.binded, startSearch, tostring(tonumber(v[2])))
+		elseif((v[1] == "BOOLEAN") or (v[1] == "BOOL")) then
+			self.binded, startSearch = replaceQM(self.binded, startSearch, (v[2] and 'true' or 'false'))
 		elseif(v[1] == "NULL") then
 			self.binded, startSearch = replaceQM(self.binded, startSearch, "NULL")
 		else
