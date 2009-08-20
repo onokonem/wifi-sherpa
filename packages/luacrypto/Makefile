@@ -35,8 +35,8 @@ define Build/Compile
 endef
 
 define Package/luacrypto/install
-	$(INSTALL_DIR) $(1)/usr/lib/lua/
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
+	$(INSTALL_DIR)  $(1)/usr/lib/lua/
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/lcrypto.so.$(PKG_VERSION) $(1)/usr/lib/lua/crypto.so
 endef
 
 $(eval $(call BuildPackage,luacrypto))
