@@ -30,10 +30,6 @@ endef
 
 MAKE_FLAGS += PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic"
 
-define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS) linux
-endef
-
 define Package/luacrypto/install
 	$(INSTALL_DIR)  $(1)/usr/lib/lua/
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/lcrypto.so.$(PKG_VERSION) $(1)/usr/lib/lua/crypto.so
