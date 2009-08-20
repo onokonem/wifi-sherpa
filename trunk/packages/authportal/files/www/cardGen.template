@@ -17,9 +17,9 @@
 <body>
 <form action="$actionUrl" method="post">
 
-	 Распечатать <INPUT TYPE="text" name="cardsCount" SIZE="3"></textarea> карточек
+	 Распечатать <INPUT TYPE="text" name="cardsCount" SIZE="3" value="10"></textarea> карточек
 		
-<input type='submit' name='gen' value='Печать'>
+<input type='submit' name='generate' value='Печать'>
 $card
 </form>
 
