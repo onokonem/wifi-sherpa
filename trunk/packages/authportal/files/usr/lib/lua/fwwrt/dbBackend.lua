@@ -10,6 +10,9 @@ module("fwwrt.dbBackend", package.seeall)
 
 require "fwwrt.util"
 
+--require "profiler"
+-- prof=0
+
 local function wrap(parent, backend, wrapper)
     local w = {parent  = parent
               ,backend = backend
@@ -31,6 +34,9 @@ local function replaceQM(statement, startSearch, replacement)
 sqlite2PreparedStatementMT.unbind  = function(self, ...) self.binded = nil return true end
 --
 sqlite2PreparedStatementMT.bind    = function(self, ...)
+--	if prof < 1 then 
+--		profiler.start()
+--	end
 	self.binded = string.gsub(self.backend, "[\n%s]+", " ")
 	local startSearch = 1
 	for i,v in ipairs(arg)
@@ -50,8 +56,12 @@ sqlite2PreparedStatementMT.bind    = function(self, ...)
 			end
 		end
 	print(self.binded)
+--	if prof < 1 then 
+--		profiler.stop()
+--	end
+--	prof=2
 	return self
-	end
+end
 --
 sqlite2PreparedStatementMT.execute = function(self, ...)
 	if (self.binded == nil) then error("Use bind first") end

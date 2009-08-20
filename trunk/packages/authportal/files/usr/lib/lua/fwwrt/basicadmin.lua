@@ -8,18 +8,22 @@
 
 module("fwwrt.basicadmin", package.seeall)
 
+--require "profiler"
+prof=0
+
 require "luasql.sqlite"
 
 require "fwwrt.authportal"
 
 local webDir     = fwwrt.util.uciGet('httpd.httpd.home',            'string')
 local hostname   = fwwrt.util.uciGet('fwwrt.authportal.httpsName',  'string')
---local ssid       = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string')
+local ssid       = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string')
 local cardsTempl=fwwrt.util.fileToVariable(webDir.."/cards.template")
 local tableTempl = fwwrt.util.fileToVariable(webDir.."/cardTable.template")
 local rowsTempl = fwwrt.util.fileToVariable(webDir.."/cardRows.template")
 local cardTempl = fwwrt.util.fileToVariable(webDir.."/card.template")
 local dynamicUserTempl = fwwrt.util.fileToVariable(webDir.."/dynamicUser.template")
+math.randomseed(os.time())
 
 dbCon = fwwrt.dbBackend.connect()
 
@@ -50,12 +54,12 @@ function insertUser(user) --should sheck values and return errors correctly todo
 --	return true --do we need this? todo
 end
 
-function autoMakeUser(passLength, rSeed)
+function autoMakeUser() --passLength
 	local abiturient
 	local tries = 0
 	local success, result
 	repeat
-		abiturient = generate(passLength, rSeed + tries*7)
+		abiturient = generate()
 		success, result = pcall(insertUser,abiturient) -- ~= true and tries < 50 do
 		tries = tries + 1
 	until success or tries > 50
@@ -66,53 +70,8 @@ function autoMakeUser(passLength, rSeed)
 	return abiturient
 end
 
-function generate(length, rSeed, charSet)
-	math.randomseed(rSeed)
-	local Chars = {}
-	for Loop = 0, 255 do
-	   Chars[Loop+1] = string.char(Loop)
-	end
-	local String = table.concat(Chars)
-
-	local Built = {['.'] = Chars}
-
-	local AddLookup = function(CharSet)
-	   local Substitute = string.gsub(String, '[^'..CharSet..']', '')
-	   local Lookup = {}
-	   for Loop = 1, string.len(Substitute) do
-	       Lookup[Loop] = string.sub(Substitute, Loop, Loop)
-	   end
-	   Built[CharSet] = Lookup
-
-	   return Lookup
-	end
-
-	 local function randGen(Length, CharSet)
-	   -- Length (number)
-	   -- CharSet (string, optional); e.g. %l%d for lower case letters and digits
-
-	   local CharSet = CharSet or '.'
-
-	   if CharSet == '' then
-	      return ''
-	   else
-	      local Result = {}
-	      local Lookup = Built[CharSet] or AddLookup(CharSet)
-	      local Range = table.getn(Lookup)
-
-	      for Loop = 1,Length do
-	         Result[Loop] = Lookup[math.random(1, Range)]
-	      end
-
-	      return table.concat(Result)
-	   end
-	end
-
-	if charSet == nil then
-		charSet = "%l%d"
-	end
-
-	return randGen(length,charSet)
+function generate()
+	return string.format("%8.8x", math.random(0,0x6fffffff))
 end
 
 function checkCookie(cookie) --todo: improve me
@@ -164,7 +123,7 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 				rows = "$do_cosm[["..rowsTempl.."]]",
 				card = "$do_cosm[["..cardTempl.."]]",
 				dynamicUser = "$do_dynamic[["..dynamicUserTempl.."]]",
-				ssid = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string'),
+				ssid = ssid,
 --				note = "i = '"..s.."'",
 				height = height,
 				width = width
@@ -172,27 +131,28 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 			}
 		end,
 		do_dynamic = function()
-			s = s + 5
 			cosmo.yield{
-				user = autoMakeUser(passLength, s*3+os.time()) --user(s)
+				user = autoMakeUser() --user(s)
 			}
 		end
 	}
 --	userFill = function(seed) return autoMakeUser(passLength, seed*3+os.time()) end
 	i = 0
+--	profiler.start()
 	while string.find(cards, "%$") ~= nill and i < 10 do
 --		usertempl
 		cards = cosmo.fill(cards,cardValues)
 		print("filling template... Level "..i)
 		i = i + 1
 	end
+--	profiler.stop()
 	print("ok, page ready to show")
 --	print(cards)
 	coroutine.yield(cards)
 --	test(wsapi_env)
 	print("3003")
 	local time2=os.time()
-	print("done in "..time2-time1.." seconds")
+	print("generating users done in "..time2-time1.." seconds")
 	print("flush")
 end
 
