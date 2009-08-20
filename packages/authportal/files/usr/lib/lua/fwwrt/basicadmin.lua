@@ -159,9 +159,9 @@ end
 function showAdminLogin(wsapi_env, reason)
 	local reason = reason or ""
 	local template  = fwwrt.util.fileToVariable(webDir.."/showAdminLogin.template")
-	local values    = {actionUrl = "https://"..hostname.."/admin"
+--	local values    = {actionUrl = "https://"..hostname.."/admin"
+	local values    = {actionUrl = "https://"..wsapi_env.SERVER_NAME.."/admin"
 	                  ,reason    = reason}
-	
 	local process = function () coroutine.yield(cosmo.fill(template, values)) end
 	return 200, commonHeaders, coroutine.wrap(process)
 end
@@ -169,20 +169,20 @@ end
 function makeCookieHeaders(wsapi_env)
 	local expireTime	= tostring(os.date ("!%a, %d-%b-%Y %H:%M:%S GMT",os.time()+3600));
 	local cookedHeaders = commonHeaders
-	cookedHeaders = {["Set-Cookie"] = "opname=root; expires="..expireTime}
+	cookedHeaders = {["Set-Cookie"] = "opname=md5; expires="..expireTime..";secure"}
 	return cookedHeaders
 end
 
 function showBasicAdminForm(wsapi_env) --showlogin
 	local template  = fwwrt.util.fileToVariable(webDir.."/cardGen.template")
-	local values = {actionUrl = "https://"..hostname.."/admin"}
-
+	local values = {actionUrl = "https://"..wsapi_env.SERVER_NAME.."/admin"}
 	local process = function () coroutine.yield(cosmo.fill(template, values)) end
 	return 200, makeCookieHeaders(wsapi_env), coroutine.wrap(process)
 end
 
 function processBasicAdminForm(wsapi_env) --main
 	local request  = wsapi.request.new(wsapi_env)
+	print("cookie = '"..tostring(wsapi_env.HTTP_COOKIE).."'")
 	local trueadmin = false
 	if (checkCookie(wsapi_env.HTTP_COOKIE) == nil) then
 --		print("cookie == nil")
