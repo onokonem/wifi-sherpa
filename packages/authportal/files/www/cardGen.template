@@ -17,33 +17,11 @@
 <body>
 <form action="$actionUrl" method="post">
 
-					 Pages:<select name='count'>
-					<option selected>1</option>
-					<option>2</option>
-					<option>3</option>
-					<option>4</option>
-					<option>5</option>
-					<option>6</option>
-					<option>7</option>
-					<option>8</option>
-					<option>9</option>
-					<option>10</option>
-					</select>
-<input type='hidden' name='pagetype' value='generated'>
-<input type='hidden' name='useIn' value='forever'>
-<input type='hidden' name='eMinute' value='0'>
-<input type='hidden' name='eHour' value='0'>
-<input type='hidden' name='eDay' value='1'>
-<input type='hidden' name='eMonth' value='0'>
-<input type='hidden' name='eYear' value='0'>
-<input type='hidden' name='note' value=''>
-<input type='hidden' name='pagetype' value='generated'>
-<input type='hidden' name='pagetype' value='generated'>
-<input type='hidden' name='pagetype' value='generated'>
-<input type='hidden' name='pagetype' value='generated'>
-<input type='hidden' name='pagetype' value='generated'>
- <p align='center'><input type='submit' name='gen' value='generate'>
-</p></form>
+	 Распечатать <INPUT TYPE="text" name="cardsCount" SIZE="3"></textarea> карточек
+		
+<input type='submit' name='gen' value='Печать'>
+$card
+</form>
 
 </body>
 </html>
