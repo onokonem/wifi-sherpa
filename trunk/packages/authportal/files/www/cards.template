@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>wifi access administration</title>
+	<title>wifi access administration</title>
 </head>
 <style>
 	.mid
@@ -12,7 +12,7 @@
 		font-weight: bold;
 	}
 </style>
-<body>
+<body onload="window.print();">
 $tables
 </body>
 </html>     

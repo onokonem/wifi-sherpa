@@ -55,7 +55,7 @@ function autoMakeUser(passLength, rSeed)
 	local tries = 0
 	local success, result
 	repeat
-		abiturient = generate(passLength, rSeed)
+		abiturient = generate(passLength, rSeed + tries*7)
 		success, result = pcall(insertUser,abiturient) -- ~= true and tries < 50 do
 		tries = tries + 1
 	until success or tries > 50
@@ -124,6 +124,7 @@ function checkCookie(cookie) --todo: improve me
 end
 
 function doAdmin(wsapi_env, request) --generate cards, create users
+	local time1=os.time()
 	local width="40%"
 	local height="85mm"
 --	local pt=5 --cards per page
@@ -178,8 +179,6 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 		end
 	}
 --	userFill = function(seed) return autoMakeUser(passLength, seed*3+os.time()) end
-		
-	
 	i = 0
 	while string.find(cards, "%$") ~= nill and i < 10 do
 --		usertempl
@@ -192,6 +191,9 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 	coroutine.yield(cards)
 --	test(wsapi_env)
 	print("3003")
+	local time2=os.time()
+	print("done in "..time2-time1.." seconds")
+	print("flush")
 end
 
 function showAdminLogin(wsapi_env, reason)
