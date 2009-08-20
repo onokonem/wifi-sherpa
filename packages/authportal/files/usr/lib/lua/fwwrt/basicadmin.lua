@@ -15,6 +15,12 @@ require "fwwrt.authportal"
 local webDir     = fwwrt.util.uciGet('httpd.httpd.home',            'string')
 local hostname   = fwwrt.util.uciGet('fwwrt.authportal.httpsName',  'string')
 --local ssid       = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string')
+local cardsTempl=fwwrt.util.fileToVariable(webDir.."/cards.template")
+local tableTempl = fwwrt.util.fileToVariable(webDir.."/cardTable.template")
+local rowsTempl = fwwrt.util.fileToVariable(webDir.."/cardRows.template")
+local cardTempl = fwwrt.util.fileToVariable(webDir.."/card.template")
+local dynamicUserTempl = fwwrt.util.fileToVariable(webDir.."/dynamicUser.template")
+
 dbCon = fwwrt.dbBackend.connect()
 
 function checkOpLogin(user, pass)
@@ -125,7 +131,8 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 --	local col=2
 --	local request = wsapi.request.new(wsapi_env)
 --	coroutine.yield("<pre>"..printTable(request, "request", ".", 10).."</pre>")
-	local countP = request.POST.count
+	local countP = request.POST.count or math.floor((request.POST.cardsCount-1)/10)+1
+--	print(math.floor(9/10)+1)
 --	local note = request.POST.note
 	
 	
@@ -140,50 +147,49 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 -- 	request.POST.eMonth*60*60*24*30+60*60*12 + request.POST.eYear*60*60*24*365
 	
 	local passLength = 8
-	function multiplyStrings (text, count)
+	local function multiplyStrings (text, count)
 		local ntext = ""
 		for i = 1, count do
 		 	ntext = ntext..text
 		end
 		return ntext
 	end
-	s = 234
-	template=("$do_cosm[["..fwwrt.util.fileToVariable(webDir.."/cards.template").."]]")
-	values = {
+	local s = 234
+	cards=("$do_cosm[["..cardsTempl.."]]")
+	cardValues = {
 		do_cosm = function()
-			cosmo.yield{			
-				tables = multiplyStrings("$do_cosm[["..
-					fwwrt.util.fileToVariable(webDir.."/cardTable.template").."]]", countP),
-				rows = "$do_cosm[["..fwwrt.util.fileToVariable(webDir.."/cardRows.template").."]]",
-				card = "$do_user[["..fwwrt.util.fileToVariable(webDir.."/card.template").."]]",
---				ssid = ssid,
+			cosmo.yield{
+				tables = multiplyStrings("$do_cosm[["..tableTempl.."]]", countP),
+				rows = "$do_cosm[["..rowsTempl.."]]",
+				card = "$do_cosm[["..cardTempl.."]]",
+				dynamicUser = "$do_dynamic[["..dynamicUserTempl.."]]",
+				ssid = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string'),
+--				note = "i = '"..s.."'",
 				height = height,
 				width = width
 --				expireIn = expireIn
 			}
 		end,
-		do_user = function()
+		do_dynamic = function()
 			s = s + 5
 			cosmo.yield{
-				user = autoMakeUser(passLength, s*3+os.time()),
-				ssid = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string'),
---				note = "i = '"..s.."'",
-				height = height,
-				width = width
+				user = autoMakeUser(passLength, s*3+os.time()) --user(s)
 			}
 		end
 	}
+--	userFill = function(seed) return autoMakeUser(passLength, seed*3+os.time()) end
+		
 	
 	i = 0
-	while string.find(template, "%$") ~= nill and i < 10 do
-		template = cosmo.fill(template,values)
+	while string.find(cards, "%$") ~= nill and i < 10 do
+--		usertempl
+		cards = cosmo.fill(cards,cardValues)
 		print("filling template... Level "..i)
 		i = i + 1
 	end
 	print("ok, page ready to show")
---	print(template)
---	print("ssid = "..ssid)
-	coroutine.yield(template)
+--	print(cards)
+	coroutine.yield(cards)
 --	test(wsapi_env)
 	print("3003")
 end
@@ -230,7 +236,7 @@ function processBasicAdminForm(wsapi_env) --main
 		trueadmin = true -- no need?
 	end
 	
-	if (request.POST.count == nil and trueadmin == true) then
+	if (request.POST.generate == nil and trueadmin == true) then
 --		print("show basic admin form")
 		return showBasicAdminForm(wsapi_env) 
 	end
