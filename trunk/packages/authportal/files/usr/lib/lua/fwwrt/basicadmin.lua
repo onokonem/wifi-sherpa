@@ -9,11 +9,12 @@
 module("fwwrt.basicadmin", package.seeall)
 
 --require "profiler"
-prof=0
+--prof=0
 
 require "luasql.sqlite"
 
 require "fwwrt.authportal"
+require "fwwrt.crypt"
 
 local webDir     = fwwrt.util.uciGet('httpd.httpd.home',            'string')
 local hostname   = fwwrt.util.uciGet('fwwrt.authportal.httpsName',  'string')
@@ -22,29 +23,29 @@ local cardsTempl=fwwrt.util.fileToVariable(webDir.."/cards.template")
 local tableTempl = fwwrt.util.fileToVariable(webDir.."/cardTable.template")
 local rowsTempl = fwwrt.util.fileToVariable(webDir.."/cardRows.template")
 local cardTempl = fwwrt.util.fileToVariable(webDir.."/card.template")
+local cardGenTempl = fwwrt.util.fileToVariable(webDir.."/cardGen.template")
 local dynamicUserTempl = fwwrt.util.fileToVariable(webDir.."/dynamicUser.template")
-math.randomseed(os.time())
 
 dbCon = fwwrt.dbBackend.connect()
 
-function checkOpLogin(user, pass)
---	local stmt = dbCon:prepare[[ SELECT * FROM operators WHERE username = :user AND pass = :pass ]]
---	stmt:bind_names{  user = user,  pass = pass    }
---	stmt:step()
----	stmt:reset()
---	stmt:finalize()
---	return true
+function checkLoginPost(request)
+	if request.method == 'POST' 
+		and request.POST.oplogin 
+		and request.POST.opname 
+		and request.POST.oppass then
+			return checkOpLogin(request.POST.opname, request.POST.oppass)
+	end
+	return nil
+end
 
---	local cur = dbCon:prepare"select * from operators where opname = ? and oppass = ?"
-	-- row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
-	
+function checkOpLogin(user, pass)
 	local cur = assert (dbCon:execute(string.format([[
          select * from operators where opname = '%s' and oppass = '%s']], user, pass))
 	)
 	-- row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
-	local result = assert(cur:fetch({}, "a"), "no matches in database!")
+	local result = cur:fetch({}, "a")
 	cur:close()
-	return result.opid
+	return result and result.opname or nil
 end
 
 function insertUser(user) --should sheck values and return errors correctly todo
@@ -59,7 +60,7 @@ function autoMakeUser() --passLength
 	local tries = 0
 	local success, result
 	repeat
-		abiturient = generate()
+		abiturient = fwwrt.crypt.randomString()
 		success, result = pcall(insertUser,abiturient) -- ~= true and tries < 50 do
 		tries = tries + 1
 	until success or tries > 50
@@ -70,22 +71,31 @@ function autoMakeUser() --passLength
 	return abiturient
 end
 
-function generate()
-	return string.format("%8.8x", math.random(0,0x6fffffff))
+function checkCookie(cookie, ip) --todo: improve me
+	local encOperand = string.sub(cookie,string.len("operator=\"")+1, -2)
+	local operand = fwwrt.crypt.decrypt(encOperand)
+--	print("shecking cookie, encript: "..tostring(operand).."")
+	if (not operand) then return nil end
+	_,_,operator,cookieip,expire = string.find(operand,"^(%S+)%s+(%S+)%s+(%S+)$")
+	if (operator and cookieip == ip and fwwrt.util.a2i(expire) > os.time()) then return operator end
+	return nil
 end
 
-function checkCookie(cookie) --todo: improve me
-	if cookie == "opname=root" then
-		return true
-	else
-		return nil
-	end
-end
-
-function makeCookieHeaders(wsapi_env)
-	local expireTime	= tostring(os.date ("!%a, %d-%b-%Y %H:%M:%S GMT",os.time()+3600));
+function makeCookieHeaders(wsapi_env, operator)
+	local expire = os.time()+3600
+	local expireString	= os.date ("!%a, %d-%b-%Y %H:%M:%S GMT",expire)
 	local cookedHeaders = commonHeaders
-	cookedHeaders = {["Set-Cookie"] = "opname=md5; expires="..expireTime..";secure"}
+	local operand = operator.." "..wsapi_env.REMOTE_ADDR.." "..expire
+	local encOperand = fwwrt.crypt.encrypt(operand)
+	cookedHeaders = {["Set-Cookie"] = "operator=\""..encOperand.."\"; expires="..expireString..";secure"}
+	return cookedHeaders
+end
+
+function makeNoCookieHeaders()
+	local expire = os.time()-3600
+	local expireString	= os.date ("!%a, %d-%b-%Y %H:%M:%S GMT",expire)
+	local cookedHeaders = commonHeaders
+	cookedHeaders = {["Set-Cookie"] = "operator=nooperator; expires="..expireString..";secure"}
 	return cookedHeaders
 end
 
@@ -160,46 +170,38 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 	print("flush")
 end
 
-function showAdminLogin(wsapi_env, reason)
+function showAdminLogin(wsapi_env, headers)
 	local reason = reason or ""
 	local template  = fwwrt.util.fileToVariable(webDir.."/showAdminLogin.template")
---	local values    = {actionUrl = "https://"..hostname.."/admin"
 	local values    = {actionUrl = "https://"..wsapi_env.SERVER_NAME.."/admin"
 	                  ,reason    = reason}
 	local process = function () coroutine.yield(cosmo.fill(template, values)) end
-	return 200, commonHeaders, coroutine.wrap(process)
+	return 200, headers, coroutine.wrap(process)
 end
 
-function showBasicAdminForm(wsapi_env) --showlogin
-	local template  = fwwrt.util.fileToVariable(webDir.."/cardGen.template")
+function showBasicAdminForm(wsapi_env, operator)
+	local template  = cardGenTempl
 	local values = {actionUrl = "https://"..wsapi_env.SERVER_NAME.."/admin"}
 	local process = function () coroutine.yield(cosmo.fill(template, values)) end
-	return 200, makeCookieHeaders(wsapi_env), coroutine.wrap(process)
+	return 200, makeCookieHeaders(wsapi_env, operator), coroutine.wrap(process)
 end
 
-function processBasicAdminForm(wsapi_env) --main
+function processBasicAdminForm(wsapi_env) --main, 
 	local request  = wsapi.request.new(wsapi_env)
 	print("cookie = '"..tostring(wsapi_env.HTTP_COOKIE).."'")
-	local trueadmin = false
-	if (checkCookie(wsapi_env.HTTP_COOKIE) == nil) then
---		print("cookie == nil")
-		if (request.method ~= 'POST' or request.POST.oplogin == nil) -- no cookie, no login attempt
-		or (pcall(checkOpLogin, request.POST.opname, request.POST.oppass) == false) then -- login failed 
-			return showAdminLogin(wsapi_env)
-		else  -- login success
-			trueadmin = true -- no need?
---			print("login – ok")
+	local operator = checkCookie(wsapi_env.HTTP_COOKIE, wsapi_env.REMOTE_ADDR)
+	                 or checkLoginPost(request)
+	print("operator = "..tostring(operator))
+	if ( operator ) then
+		if (request.method == 'POST' and request.POST.generate) then
+			local callDoAdmin = function() return doAdmin(wsapi_env, request) end
+			return 200, makeCookieHeaders(wsapi_env, operator), coroutine.wrap(callDoAdmin)
+		elseif (request.method == 'POST' and request.POST.logout) then
+			return showAdminLogin(wsapi_env, makeNoCookieHeaders())
+		else
+			return showBasicAdminForm(wsapi_env, operator)
 		end
 	else
---		print("cookie – ok")
-		trueadmin = true -- no need?
+		return showAdminLogin(wsapi_env, commonHeaders)
 	end
-	
-	if (request.POST.generate == nil and trueadmin == true) then
---		print("show basic admin form")
-		return showBasicAdminForm(wsapi_env) 
-	end
---	print("request.method = '"..request.method.."'\ntrueadmin = '"..tostring(trueadmin).."'")
-    local callDoAdmin = function() return doAdmin(wsapi_env, request) end
-    return 200, makeCookieHeaders(wsapi_env), coroutine.wrap(callDoAdmin)
 end
