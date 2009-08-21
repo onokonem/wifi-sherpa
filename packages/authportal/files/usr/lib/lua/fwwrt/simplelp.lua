@@ -16,12 +16,11 @@ local closeTagPattern = "%%>"
 
 
 local function wrapStaticText(text, b, e)
-    return (b <= e) and "echo([["..eol..string.sub(text, b, e).."]])"..eol or ""
+    local subStr = string.sub(text, b, e)
+    return string.len(subStr) and "echo([["..eol..string.sub(text, b, e).."]])" or ""
 end
 
 local function wrapCode(text, b, e)
-	if (b > e) then return "" end
-
 	if (string.sub(text, b, b) == "=") then
 		return "echo("..string.sub(text, b+1, e)..")"
 	end
@@ -51,22 +50,21 @@ function evertText(text)
 
     result = result..wrapStaticText(text, startSearch, -1)
 
-    print("result: '"..result.."'")
     return result
 end
 
-function echo(out, ...)
+function echo(container, ...)
 	for i,a in ipairs(arg) do
-		out = out..tostring(a)
+		container.out = container.out..tostring(a)
 		end
 end
 
 local loadstringPrefix = [[
 return function(container)
 
-local function echo(...)     return fwwrt.simplelp.echo(container.out, ...) end
-local function inc(fileName) return fwwrt.simplelp.inc(fileName)            end
-local function req(fileName) return fwwrt.simplelp.req(fileName)            end
+local function echo(...)     return fwwrt.simplelp.echo(container, ...) end
+local function inc(fileName) return fwwrt.simplelp.inc(fileName)        end
+local function req(fileName) return fwwrt.simplelp.req(fileName)        end
 
 ]]
 
