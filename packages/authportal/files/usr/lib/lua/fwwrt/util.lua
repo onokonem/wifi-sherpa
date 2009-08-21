@@ -86,7 +86,13 @@ function printTable(table, pref, shift, maxLevel, level, loopDetect) -- loopDete
 -- UCI methods ---------------------------------------------------------------
 ------------------------------------------------------------------------------
 
-require "uci"
+local success, uci = pcall(require, "uci")
+
+if (not success) then
+    local errMsg = uci
+    uci = {}
+	uci.get_all = function() error("uci module could not be loaded: "..errMsg) end
+	end
 
 local function findSubsection(section, subsectionName)
 	if (not section) then return nil end
