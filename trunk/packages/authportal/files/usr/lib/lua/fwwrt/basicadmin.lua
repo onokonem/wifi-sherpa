@@ -82,6 +82,13 @@ function checkCookie(cookie) --todo: improve me
 	end
 end
 
+function makeCookieHeaders(wsapi_env)
+	local expireTime	= tostring(os.date ("!%a, %d-%b-%Y %H:%M:%S GMT",os.time()+3600));
+	local cookedHeaders = commonHeaders
+	cookedHeaders = {["Set-Cookie"] = "opname=md5; expires="..expireTime..";secure"}
+	return cookedHeaders
+end
+
 function doAdmin(wsapi_env, request) --generate cards, create users
 	local time1=os.time()
 	local width="40%"
@@ -94,8 +101,6 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 	local countP = request.POST.count or math.floor((request.POST.cardsCount-1)/10)+1
 --	print(math.floor(9/10)+1)
 --	local note = request.POST.note
-	
-	
 	local useIn = {}
 	useIn.day = 24*60*60
 	useIn.week, useIn.month, useIn.year =
@@ -135,8 +140,7 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 				user = autoMakeUser() --user(s)
 			}
 		end
-	}
---	userFill = function(seed) return autoMakeUser(passLength, seed*3+os.time()) end
+		}
 	i = 0
 --	profiler.start()
 	while string.find(cards, "%$") ~= nill and i < 10 do
@@ -164,13 +168,6 @@ function showAdminLogin(wsapi_env, reason)
 	                  ,reason    = reason}
 	local process = function () coroutine.yield(cosmo.fill(template, values)) end
 	return 200, commonHeaders, coroutine.wrap(process)
-end
-
-function makeCookieHeaders(wsapi_env)
-	local expireTime	= tostring(os.date ("!%a, %d-%b-%Y %H:%M:%S GMT",os.time()+3600));
-	local cookedHeaders = commonHeaders
-	cookedHeaders = {["Set-Cookie"] = "opname=md5; expires="..expireTime..";secure"}
-	return cookedHeaders
 end
 
 function showBasicAdminForm(wsapi_env) --showlogin
