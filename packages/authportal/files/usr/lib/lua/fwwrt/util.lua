@@ -152,3 +152,11 @@ function yeldSleep(t, yieldParam)
 	while ((os.time() - curTime) < t) do coroutine.yield(yieldParam) end
 	end
 
+------------------------------------------------------------------------------
+-- Math methods --------------------------------------------------------------
+------------------------------------------------------------------------------
+
+function a2i(num)
+    return tonumber(num) or 0
+	end
+
