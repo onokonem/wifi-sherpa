@@ -17,7 +17,7 @@ local closeTagPattern = "%%>"
 
 local function wrapStaticText(text, b, e)
     local subStr = string.sub(text, b, e)
-    return string.len(subStr) and "echo([["..eol..string.sub(text, b, e).."]])" or ""
+    return string.len(subStr) and "echo([["..string.sub(text, b, e).."]])" or ""
 end
 
 local function wrapCode(text, b, e)
