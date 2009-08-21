@@ -123,6 +123,8 @@ local converters = {['string']  = tostring
                    }
 
 function uciGet(paramName, paramType)
+    paramType = paramType or 'string'
+
     local converter  = converters[paramType]
     assert(converter, "'"..tostring(paramType).."' is not a valid type")
 
