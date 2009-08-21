@@ -55,7 +55,7 @@ sqlite2PreparedStatementMT.bind    = function(self, ...)
 			error(string.format("Type '%s' is unknown", tostring(v[1])))
 			end
 		end
-	print(self.binded)
+--	print(self.binded)
 --	if prof < 1 then 
 --		profiler.stop()
 --	end

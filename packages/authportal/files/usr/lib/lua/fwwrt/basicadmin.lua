@@ -67,7 +67,7 @@ function autoMakeUser() --passLength
 	if not success then
 		error(string.format("user is not added in %d tries: %s", tries, tostring(result)))
 	end
-	print("user added in "..tries.." tries ==================================================")
+--	print("user added in "..tries.." tries ==================================================")
 	return abiturient
 end
 

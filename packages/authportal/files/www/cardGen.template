@@ -15,12 +15,16 @@
 </head>
 
 <body>
-<form action="$actionUrl" method="post">
+<form action="$actionUrl" method="post" name="gen">
 
-	 Распечатать <INPUT TYPE="text" name="cardsCount" SIZE="3" value="10"></textarea> карточек
+	 Распечатать <INPUT TYPE="text" name="cardsCount" SIZE="3" value="10"> карточек
 		
 <input type='submit' name='generate' value='Печать'>
 $card
+</form>
+<br>
+<form action="$actionUrl" method="post" name = "out">
+	<input type='submit' name='logout' value='logout'>
 </form>
 
 </body>
