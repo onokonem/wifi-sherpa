@@ -78,11 +78,17 @@ function doString(str)
 	return container.out
 end
 
-function req(fileName)
+function reqWithException(fileName)
     return doString(fwwrt.util.fileToVariable(fileName))
 end
 
+function req(fileName)
+    local success, result = pcall(reqWithException, fileName)
+	return result
+end
+
 function inc(fileName)
-	return pcall(req(fileName))
+    local success, result = pcall(reqWithException, fileName)
+	return success and result or ""
 end
 
