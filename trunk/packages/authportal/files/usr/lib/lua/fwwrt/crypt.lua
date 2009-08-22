@@ -14,7 +14,7 @@ require "md5"
 math.randomseed(os.time())
 
 function randomString()
-	return string.format("%8.8x", math.random(0,0x6fffffff))
+	return string.format("%8.8x", math.random(0,0x7fffffff))
 end
 
 local defaultKey = randomString()
