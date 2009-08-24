@@ -1,0 +1,31 @@
+<html>
+<head>
+	<title>wifi access administration</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<style type="text/css">
+.mid
+	{
+		background :#e1e1e1;
+	}
+	.user
+	{
+		font-weight: bold;
+	}
+	</style>
+</head>
+
+<body>
+<form action="$actionUrl" method="post" name="gen">
+
+	 Распечатать <INPUT TYPE="text" name="cardsCount" SIZE="3" value="10"> карточек
+		
+<input type='submit' name='generate' value='Печать'>
+$card
+</form>
+<br>
+<form action="$actionUrl" method="post" name = "out">
+	<input type='submit' name='logout' value='logout'>
+</form>
+
+</body>
+</html>

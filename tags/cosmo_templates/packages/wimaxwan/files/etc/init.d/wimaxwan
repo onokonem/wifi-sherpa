@@ -1,0 +1,20 @@
+#!/bin/sh /etc/rc.common
+
+START=10
+
+wimaxIface="wimax0"
+
+start() {
+	test "`uci get network.wan.ifname`" == "$wimaxIface" ||
+		{
+		uci set network.wan.ifname="$wimaxIface"
+		uci set network.wan.proto=dhcp
+		uci set network.wan.auto=0
+		uci commit
+		}
+}
+
+stop() {
+	echo "Nothing to be done" 1>&2
+	return 0
+}

@@ -1,0 +1,30 @@
+<html>
+ <head>
+  <title>Страница аутентификации</title>
+	<meta HTTP-EQUIV="REFRESH" content="7; URL=$origUrl">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+ </head>
+ <body>
+  <table ALIGN="center" VALIGN="middle" WIDTH="100%" HEIGHT="100%">
+   <tr ALIGN="center" VALIGN="middle">
+    <td>
+     <FORM ACTION="$actionUrl" METHOD="POST" NAME="LogoutForm">
+      <table>
+       <tr>
+        <td ALIGN="center">
+			<p>Вас приветствует система Шерп. Доступ к сети разрешён. Вы автоматически попадёте на нужную Вам страницу через 10 секунд, если этого не произойдёт, нажмите на <a href="$origUrl">эту ссылку</a>. В случае затруднений Вы можете обратиться за помощью к официанту.</p>
+		</td>
+       </tr>
+	   <tr>
+		<td ALIGN="right">		
+<!--        <INPUT TYPE="submit" name="logout" VALUE="Отключите меня от интернета!"/></td> -->
+		<p><b>Компания «Седьмой Слон» - проектирование и разработка сетевых решений, <a href="http://www.sslon.info">sslon.info</a></b></p>
+       	</td>
+	   </tr>
+      </table>
+     </FORM>
+    </td>
+   </tr>
+  </table>
+ </body>
+</html>

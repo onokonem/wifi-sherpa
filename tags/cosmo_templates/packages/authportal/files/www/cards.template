@@ -1,0 +1,18 @@
+<html>
+<head>
+	<title>wifi access administration</title>
+</head>
+<style>
+	.mid
+	{
+		background :#e1e1e1;
+	}
+	.user
+	{
+		font-weight: bold;
+	}
+</style>
+<body onload="window.print();">
+$tables
+</body>
+</html>     

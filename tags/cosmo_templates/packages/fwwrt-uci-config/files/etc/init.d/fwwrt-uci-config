@@ -1,0 +1,74 @@
+#!/bin/sh /etc/rc.common
+
+START=10
+
+uciFindAndRemove() {
+	name=`uci show "$1"|grep "$2"'$'|cut -d '.' -f 1,2|head -n 1`
+	while test -n "$name"
+		do
+		uci delete "$name"
+		name=`uci show "$1"|grep "$2"'$'|cut -d '.' -f 1,2|head -n 1`
+		done
+	echo
+	}
+
+start() {
+        tmpStr="`uci get fwwrt.ports`"
+
+        test "$tmpStr" == "fwwrt" ||
+          {
+          uci import fwwrt <<EOF
+config 'fwwrt' 'ports'
+    option 'unauth'    '3001'
+    option 'unauthSSL' '3002'
+    option 'unauthDNS' '3053'
+    option 'auth'      '3003'
+    option 'authSSL'   '3004'
+    option 'squid'     '3128'
+    option 'ssh'       '4778'
+
+config 'fwwrt' 'ssl'
+    option 'certificate' '/etc/certs/hot.spot.pem'
+    option 'cafile_disabled'   '/etc/certs/CA.pem'
+    option 'ciphers'     'ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL'
+
+config 'fwwrt' 'firewall'
+    option 'externalAdmin'   'YES'
+    option 'squidEnabled'    'no'
+    option 'iptables'        '/usr/sbin/iptables'
+    option 'includepath'     '/etc/firewall.fwwrt'
+
+config 'fwwrt' 'dhcp'
+    option 'kickoffTimeout'  '5m'
+
+config 'fwwrt' 'log'
+    option 'verbose'         'false'
+
+config 'fwwrt' 'authportal'
+    option 'logindelay'      '2'
+    option 'httpsName'       'hot.spot'
+    option 'dbType'          'sqlite2'
+    option 'dbFile'          '/usr/local/fwwrt/authportal.sqlite2'
+EOF
+
+		uci commit
+		}
+	
+	uci set dhcp.lan.leasetime="`uci get fwwrt.dhcp.kickoffTimeout`"
+	
+	uciFindAndRemove firewall ".path=`uci get fwwrt.firewall.includepath`"
+	uci add firewall include
+	uci set firewall.@include[-1].path="`uci get fwwrt.firewall.includepath`"
+
+	uciFindAndRemove luci_hosts ".hostname=`uci get fwwrt.authportal.httpsName`"
+	uci add luci_hosts host
+	uci set luci_hosts.@host[-1].hostname="`uci get fwwrt.authportal.httpsName`"
+	uci set luci_hosts.@host[-1].ipaddr="`uci get network.lan.ipaddr`"
+
+	uci commit
+	}
+
+stop() {
+        echo "Nothing to be done" 1>&2
+        return 0
+}

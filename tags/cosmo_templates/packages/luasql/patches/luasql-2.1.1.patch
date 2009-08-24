@@ -1,0 +1,134 @@
+diff -ubBENdr luasql-2.1.1.orig/Makefile luasql-2.1.1/Makefile
+--- luasql-2.1.1.orig/Makefile	2009-08-08 02:36:21.000000000 +0400
++++ luasql-2.1.1/Makefile	2009-08-17 02:01:09.000000000 +0400
+@@ -7,6 +7,13 @@
+ COMPAT_O= $(COMPAT_DIR)/compat-5.1.o
+ endif
+ 
++mysql_OBJS= src/luasql.o src/ls_mysql.o $(COMPAT_O)
++oci8_OBJS= src/luasql.o src/ls_oci8.o $(COMPAT_O)
++odbc_OBJS= src/luasql.o src/ls_odbc.o $(COMPAT_O)
++postgres_OBJS= src/luasql.o src/ls_postgres.o $(COMPAT_O)
++sqlite_OBJS= src/luasql.o src/ls_sqlite.o $(COMPAT_O)
++sqlite3_OBJS= src/luasql.o src/ls_sqlite3.o $(COMPAT_O)
++
+ OBJS= src/luasql.o src/ls_$T.o $(COMPAT_O)
+ 
+ 
+@@ -20,15 +27,64 @@
+ AR= ar rcu
+ RANLIB= ranlib
+ 
++mysql_lib: src/mysql.so
++oci8_lib: src/oci8.so
++odbc_lib: src/odbc.so
++postgres_lib: src/postgres.so
++sqlite_lib: src/sqlite.so
++sqlite3_lib: src/sqlite3.so
+ 
+ lib: src/$(LIBNAME)
+ 
++src/mysql.so: $(mysql_OBJS)
++	$(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(mysql_OBJS) $(DRIVER_LIBS)
++
++src/oci8.so: $(oci8_OBJS)
++	$(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(oci8_OBJS) $(DRIVER_LIBS)
++
++src/odbc.so: $(odbc_OBJS)
++	$(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(odbc_OBJS) $(DRIVER_LIBS)
++
++src/postgres.so: $(postgres_OBJS)
++	$(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(postgres_OBJS) $(DRIVER_LIBS)
++
++src/sqlite.so: $(sqlite_OBJS)
++	$(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(sqlite_OBJS) $(DRIVER_LIBS)
++
++src/sqlite3.so: $(sqlite3_OBJS)
++	$(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(sqlite3_OBJS) $(DRIVER_LIBS)
++
+ src/$(LIBNAME): $(OBJS)
+ 	export MACOSX_DEPLOYMENT_TARGET="10.3"; $(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(OBJS) $(DRIVER_LIBS)
+ 
+ $(COMPAT_DIR)/compat-5.1.o: $(COMPAT_DIR)/compat-5.1.c
+ 	$(CC) -c $(CFLAGS) -o $@ $(COMPAT_DIR)/compat-5.1.c
+ 
++mysql_install:
++	mkdir -p $(LUA_LIBDIR)/luasql
++	cp src/mysql.so $(LUA_LIBDIR)/luasql
++
++oci8_install:
++	mkdir -p $(LUA_LIBDIR)/luasql
++	cp src/oci8.so $(LUA_LIBDIR)/luasql
++
++odbc_install:
++	mkdir -p $(LUA_LIBDIR)/luasql
++	cp src/odbc.so $(LUA_LIBDIR)/luasql
++
++postgres_install:
++	mkdir -p $(LUA_LIBDIR)/luasql
++	cp src/postgres.so $(LUA_LIBDIR)/luasql
++
++sqlite_install:
++	mkdir -p $(LUA_LIBDIR)/luasql
++	cp src/sqlite.so $(LUA_LIBDIR)/luasql
++
++sqlite3_install:
++	mkdir -p $(LUA_LIBDIR)/luasql
++	cp src/sqlite3.so $(LUA_LIBDIR)/luasql
++
++
+ install:
+ 	mkdir -p $(LUA_LIBDIR)/luasql
+ 	cp src/$(LIBNAME) $(LUA_LIBDIR)/luasql
+@@ -40,3 +96,5 @@
+ 	rm -f src/$(LIBNAME) src/*.o $(COMPAT_O)
+ 
+ # $Id: Makefile,v 1.54 2007/10/29 21:44:54 carregal Exp $
++# Modified by Daniel Podolsky, tpaba@cpan.org, 2009-08-17
++# for FWWRT install
+\ No newline at end of file
+diff -ubBENdr luasql-2.1.1.orig/config luasql-2.1.1/config
+--- luasql-2.1.1.orig/config	2009-08-08 02:36:21.000000000 +0400
++++ luasql-2.1.1/config	2009-08-16 17:57:37.000000000 +0400
+@@ -4,18 +4,18 @@
+ #T= odbc
+ #T= postgres
+ #T= sqlite
+-T=sqlite3
++#T= sqlite3
+ 
+ # Installation directories
+ 
+ # Default prefix
+-PREFIX = /usr/local
++# PREFIX = /usr/local # Will be set externally
+ 
+ # System's libraries directory (where binary libraries are installed)
+-LUA_LIBDIR= $(PREFIX)/lib/lua/5.1
++LUA_LIBDIR= $(PREFIX)/lib/lua/
+ 
+ # System's lua directory (where Lua libraries are installed)
+-LUA_DIR= $(PREFIX)/share/lua/5.1
++LUA_DIR= $(PREFIX)/lib/lua/
+ 
+ # Lua includes directory
+ LUA_INC= $(PREFIX)/include
+@@ -45,15 +45,15 @@
+ #DRIVER_LIBS= -lsqlite
+ #DRIVER_INCS=
+ ######## SQLite3 
+-DRIVER_LIBS= -L/opt/local/lib -lsqlite3
+-DRIVER_INCS= -I/opt/local/include
++#DRIVER_LIBS= -L/opt/local/lib -lsqlite3
++#DRIVER_INCS= -I/opt/local/include
+ ######## ODBC
+ #DRIVER_LIBS= -L/usr/local/lib -lodbc
+ #DRIVER_INCS= -DUNIXODBC -I/usr/local/include
+ 
+ WARN= -Wall -Wmissing-prototypes -Wmissing-declarations -ansi -pedantic
+ INCS= -I$(LUA_INC)
+-CFLAGS= -O2 $(WARN) -I$(COMPAT_DIR) $(DRIVER_INCS) $(INCS) $(DEFS)
++CFLAGS= -Os $(WARN) -I$(COMPAT_DIR) $(DRIVER_INCS) $(INCS) $(DEFS)
+ CC= gcc
+ 
+ # $Id: config,v 1.8 2007/10/27 22:55:27 carregal Exp $
