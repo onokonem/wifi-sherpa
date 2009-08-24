@@ -39,7 +39,7 @@ sqlite2PreparedStatementMT.bind    = function(self, ...)
 --	end
 	self.binded = string.gsub(self.backend, "[\n%s]+", " ")
 	local startSearch = 1
-	for i,v in ipairs(arg)
+	for i,v in ipairs(type(arg[1][1]) == 'table' and arg[1] or arg)
 		do
 		if((v[1] == "TEXT") or (v[1] == "BLOB")) then
 			-- self.binded, startSearch = replaceQM(self.binded, startSearch, self.parent.parent:quotestr(tostring(v[2])))
