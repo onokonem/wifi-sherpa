@@ -38,17 +38,20 @@ local openTagPattern  = "<%%"
 local closeTagPattern = "%%>"
 
 local function calcFileName(param, env)
-    print("calcFileName("..tostring(param)..", "..tostring(env)..")") io.flush()
 	return ((assert(loadstring("return function(env) return ("..param..") end"))())(env))
+	end
+
+local function fileToVariable(param, env)
+	return fwwrt.util.fileToVariable(calcFileName(param, env))
 	end
 
 local includePatterns = {}
 includePatterns["<%%%!%s*([^%s<%%>]+)%s*%%>"] = function(param, env)
-    local success, result = pcall(pcall(fwwrt.util.fileToVariable, calcFileName(param, env)))
+    local success, result = pcall(fileToVariable, param, env)
 	return success and result or "Could not include file '"..tostring(param).."': "..result
 	end
 includePatterns["<%%%?%s*([^%s<%%>]+)%s*%%>"] = function(param, env)
-    local success, result = pcall(pcall(fwwrt.util.fileToVariable, calcFileName(param, env)))
+    local success, result = pcall(fileToVariable, param, env)
 	return success and result or ""
 	end
 includePatterns["<%%%:%s*([^%s<%%>]+)%s*%%>"] = function(param, env)
