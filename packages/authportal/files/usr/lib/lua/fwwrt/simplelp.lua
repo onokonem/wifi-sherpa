@@ -38,12 +38,12 @@ local openTagPattern  = "<%%"
 local closeTagPattern = "%%>"
 
 local includePatterns = {}
-includePatterns["<%%%!%s*([^%s%%>]+)%s*<%%>"] = function(param)
-    local success, result = pcall(fileToVariable, param)
-	return success and result or "Can not include file '"..tostring(fileName).."': "..result
+includePatterns["<%%%!%s*([^%s<%%>]+)%s*%%>"] = function(param)
+    local success, result = pcall(fwwrt.util.fileToVariable, param)
+	return success and result or "Could not include file '"..tostring(param).."': "..result
 	end
 includePatterns["<%%%?%s*([^%s<%%>]+)%s*%%>"] = function(param)
-    local success, result = pcall(fileToVariable, param)
+    local success, result = pcall(fwwrt.util.fileToVariable, param)
 	return success and result or ""
 	end
 includePatterns["<%%%:%s*([^%s<%%>]+)%s*%%>"] = function(param, env)
@@ -67,16 +67,16 @@ local function substByFunc(text, pattern, substFunc)
 	    found  = true
 		result = result..string.sub(text, startSearch, tagPosition - 1)..substFunc(tagParam, env)
 	    startSearch = tagEnd + 1
-	    tagPosition, tagEnd, tagParam = string.find(text, includePattern, startSearch)
+	    tagPosition, tagEnd, tagParam = string.find(text, pattern, startSearch)
 		end
 	result = result..string.sub(text, startSearch, -1)
+
 	return found, result
 	end
 
 local function assemble(text, env)
     local noSubst   = true
     local substTurn = 0
-    print("text  in: '"..text.."'")
     repeat
         noSubst   = true
 	    local pattern, func
@@ -87,9 +87,8 @@ local function assemble(text, env)
 	    	end
 	    
 	    substTurn = substTurn + 1
-		until (noSubst and (substTurn > maxSubst))
+		until (noSubst or (substTurn > maxSubst))
 
-    print("text out: '"..text.."'")
     return text
 	end
 
@@ -136,7 +135,6 @@ function evertText(text, env)
 
     result = result..wrapStaticText(text, startSearch, -1)
 
-    print(result)
     return result
 end
 
