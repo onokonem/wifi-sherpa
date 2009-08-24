@@ -37,13 +37,17 @@ local firstEolPattern = "^\r?\n"
 local openTagPattern  = "<%%"
 local closeTagPattern = "%%>"
 
+local function calcFileName(param, env)
+	return ((assert(loadstring("return function(env) return ("..param..") end"))())(env))
+	end
+
 local includePatterns = {}
-includePatterns["<%%%!%s*([^%s<%%>]+)%s*%%>"] = function(param)
-    local success, result = pcall(fwwrt.util.fileToVariable, param)
+includePatterns["<%%%!%s*([^%s<%%>]+)%s*%%>"] = function(param, env)
+    local success, result = pcall(pcall(fwwrt.util.fileToVariable, calcFileName(param, env)))
 	return success and result or "Could not include file '"..tostring(param).."': "..result
 	end
-includePatterns["<%%%?%s*([^%s<%%>]+)%s*%%>"] = function(param)
-    local success, result = pcall(fwwrt.util.fileToVariable, param)
+includePatterns["<%%%?%s*([^%s<%%>]+)%s*%%>"] = function(param, env)
+    local success, result = pcall(pcall(fwwrt.util.fileToVariable, calcFileName(param, env)))
 	return success and result or ""
 	end
 includePatterns["<%%%:%s*([^%s<%%>]+)%s*%%>"] = function(param, env)
