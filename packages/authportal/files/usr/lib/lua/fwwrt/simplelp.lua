@@ -38,6 +38,7 @@ local openTagPattern  = "<%%"
 local closeTagPattern = "%%>"
 
 local function calcFileName(param, env)
+    print("calcFileName("..tostring(param)..", "..tostring(env)..")") io.flush()
 	return ((assert(loadstring("return function(env) return ("..param..") end"))())(env))
 	end
 
@@ -61,7 +62,7 @@ local function recursionError()
 	return string.format("!!! Error: substitution was not completed in %d turns, endless recursion suspected !!!", maxSubst)
 	end
 
-local function substByFunc(text, pattern, substFunc)
+local function substByFunc(text, pattern, substFunc, env)
 	local found  = false
 	local result = ""
 
@@ -86,7 +87,7 @@ local function assemble(text, env)
 	    local pattern, func
 	    for pattern, substFunc in pairs(includePatterns) do
 	        local found
-	        found, text = substByFunc(text, pattern, (substTurn < maxSubst) and substFunc or recursionError)
+	        found, text = substByFunc(text, pattern, (substTurn < maxSubst) and substFunc or recursionError, env)
 	        noSubst = noSubst and (not found)
 	    	end
 	    
