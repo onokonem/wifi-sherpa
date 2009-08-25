@@ -87,19 +87,19 @@ local servers = {["*"] = {[fwwrt.util.uciGet('fwwrt.ports.unauth', 'number')] =
                          ,[fwwrt.util.uciGet('fwwrt.ports.unauthSSL', 'number')] = 
                                    {rules = {adminRule
                                             ,publicRule
-                                            ,catchAll(fwwrt.authportal.showLoginForm)
+                                            ,catchAll(fwwrt.authportal.processLoginForm)
                                             }
                                    ,ssl   = ssl
                                    }
                          ,[fwwrt.util.uciGet('fwwrt.ports.auth', 'number')] = 
                                    {rules = {publicRule
-                                            ,catchAll(fwwrt.authportal.showLoginForm)
+                                            ,catchAll(fwwrt.authportal.processLogoutForm)
                                             }
                                    }
                          ,[fwwrt.util.uciGet('fwwrt.ports.authSSL', 'number')] = 
                                    {rules = {adminRule
                                             ,publicRule
-                                            ,catchAll(fwwrt.authportal.showLoginForm)
+                                            ,catchAll(fwwrt.authportal.processLogoutForm)
                                             }
                                    ,ssl   = ssl
                                    }
