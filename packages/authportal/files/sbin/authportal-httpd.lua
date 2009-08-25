@@ -17,6 +17,7 @@ end
 
 require "xavante"
 require "xavante.cgiluahandler"
+require "xavante.filehandler"
 require "wsapi.xavante"
 -- require "luci.sgi.wsapi"
 
@@ -67,6 +68,11 @@ local adminRule = {match = {"^/admin"}
                   ,with  = wsapi.xavante.makeHandler(fwwrt.basicadmin.processBasicAdminForm, nil, webDir, webDir)
                   }
 
+local publicRule = {match  = {"^/public/"}
+                   ,with   = xavante.filehandler
+                   ,params = {baseDir = webDir}
+                   }
+
 function catchAll(handler)
 	return {match = {"."}
 	       ,with  = wsapi.xavante.makeHandler(handler, nil, webDir, webDir)
@@ -74,22 +80,26 @@ function catchAll(handler)
 	end
 
 local servers = {["*"] = {[fwwrt.util.uciGet('fwwrt.ports.unauth', 'number')] = 
-                                   {rules = {catchAll(fwwrt.authportal.showLoginForm)
+                                   {rules = {publicRule
+                                            ,catchAll(fwwrt.authportal.showLoginForm)
                                             }
                                    }
                          ,[fwwrt.util.uciGet('fwwrt.ports.unauthSSL', 'number')] = 
                                    {rules = {adminRule
-                                            ,catchAll(fwwrt.authportal.processLoginForm)
+                                            ,publicRule
+                                            ,catchAll(fwwrt.authportal.showLoginForm)
                                             }
                                    ,ssl   = ssl
                                    }
                          ,[fwwrt.util.uciGet('fwwrt.ports.auth', 'number')] = 
-                                   {rules = {catchAll(fwwrt.authportal.processLogoutForm)
+                                   {rules = {publicRule
+                                            ,catchAll(fwwrt.authportal.showLoginForm)
                                             }
                                    }
                          ,[fwwrt.util.uciGet('fwwrt.ports.authSSL', 'number')] = 
                                    {rules = {adminRule
-                                            ,catchAll(fwwrt.authportal.processLogoutForm)
+                                            ,publicRule
+                                            ,catchAll(fwwrt.authportal.showLoginForm)
                                             }
                                    ,ssl   = ssl
                                    }
