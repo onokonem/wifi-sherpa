@@ -169,21 +169,18 @@ local loadstringPostfix = [[
 end
 ]]
 
+local slp_prototype_mt = {__index = {}}
+slp_prototype_mt.__index.run = function(self, env)
+	self:body(env)
+	return self.out
+	end
+
 function loadString(str, env)
-    level = level or 0
 	local slp = {}
+	setmetatable(slp, slp_prototype_mt)
+
 	slp.body  = assert(loadstring(loadstringPrefix..evertText(str, env)..loadstringPostfix))()
 
-	slp.run = function(self, env)
-		self:body(env)
-		return self.out
-		end
-	
-	slp.prepare = function(self, env)
-		self.body  = assert(loadstring(loadstringPrefix..evertText(self:run(env))..loadstringPostfix))()
-		self.level = level
-		end
-	
 	return slp
 end
 
