@@ -1,3 +1,7 @@
 	<table cellpadding="5" cellspacing="0" border="1" height='100%' style="font-family:Arial, Helvetica, sans-serif" style="page-break-after: always">	
-	$rows $rows $rows $rows $rows
+<%!"/www/cardRows.template"%>
+<%!"/www/cardRows.template"%>
+<%!"/www/cardRows.template"%>
+<%!"/www/cardRows.template"%>
+<%!"/www/cardRows.template"%>	
 	</table>
