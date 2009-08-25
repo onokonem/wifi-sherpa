@@ -101,7 +101,7 @@ end
 local redirectBody = "<htmp><head><title>302 Redirect</title></head><body>302 Redirect</body></html>"
 
 function yeldSleep()
-	fwwrt.util.yeldSleep(loginDelay, "")
+	fwwrt.util.yeldSleep(loginDelay, "yeldSleep")
 	coroutine.yield(redirectBody)
 end
 

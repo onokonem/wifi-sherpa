@@ -91,7 +91,7 @@ local function insertSeveralUers(several)
 end
 
 local abiturientas = {}
-function autoMakeUser() --passLength
+function autoMakeUsers() --passLength
 	local abiturient = table.remove(abiturientas)
 	if not abiturient then
 		abiturientas = insertSeveralUers(10)
@@ -135,6 +135,7 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 	local countP = request.POST.count or math.floor((request.POST.cardsCount-1)/10)+1
 --	print(math.floor(9/10)+1)
 --	local note = request.POST.note
+	local pcdiff = 10/countP
 	local useIn = {}
 	useIn.day = 24*60*60
 	useIn.week, useIn.month, useIn.year =
@@ -144,20 +145,13 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 -- 	local expireIn = request.POST.eMinute*60 + 
 -- 	request.POST.eHour*60*60 + request.POST.eDay*60*60*24 + 
 -- 	request.POST.eMonth*60*60*24*30+60*60*12 + request.POST.eYear*60*60*24*365
-
-	print("let's sleep a bit")
-	print("preparing page")
-	local u = 0
-	local env = {pages = countP, 
+	local env = {pages = countP, pcdiff = pcdiff,
 		echo = function (...) local i,v for i,v in ipairs(arg) do coroutine.yield(tostring(v)) end end,
-		user = function () return autoMakeUser() end}
-	print("ok, page ready to show")
+		user = function () return autoMakeUsers() end}
 	coroutine.yield(cards:run(env))
 --	test(wsapi_env)
-	print("3003")
 	local time2=os.time()
 	print("generating users done in "..time2-time1.." seconds")
-	print("flush")
 end
 
 function showAdminLogin(wsapi_env, headers)

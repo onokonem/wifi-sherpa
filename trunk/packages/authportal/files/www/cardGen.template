@@ -15,6 +15,27 @@
 </head>
 
 <body>
+	<script type="text/javascript" src="/public/js/prototype/prototype.js"></script>
+	<script type="text/javascript" src="/public/js/bramus/jsProgressBarHandler.js"></script>
+	<script type="text/javascript">
+		function bar (){
+			manualPB2 = new JS_BRAMUS.jsProgressBar(
+						$('progressbar'),
+						0,
+						{
+							barImage	: Array(
+								'/public/images/bramus/percentImage_back4.png',
+								'/public/images/bramus/percentImage_back3.png',
+								'/public/images/bramus/percentImage_back2.png',
+								'/public/images/bramus/percentImage_back1.png'
+							)
+						}
+					);
+		}
+	</script>
+	
+	<span id="progressbar" style="display: none;">[ Идет кеширование... ]</span>
+	<script>bar();manualPB2.setPercentage('100')</script>
 <form action="$actionUrl" method="post" name="gen">
 
 	 Распечатать <INPUT TYPE="text" name="cardsCount" SIZE="3" value="10"> карточек
