@@ -1,20 +1,53 @@
 <html>
 <head>
 	<title>wifi access administration</title>
+	<script type="text/javascript">
+		function hideStuff(id) {
+				document.getElementById(id).style.display = 'none';
+		}
+	</script>
+	<style type="text/css">
+   P {
+    font-family: Verdana, Arial, Helvetica, sans-serif; 
+    font-size: 8pt; /* Размер шрифта в пунктах */ 
+   }
+   UL {
+    font-family: Verdana, Arial, Helvetica, sans-serif; 
+    font-size: 8pt; /* Размер шрифта в пунктах */ 
+   }
+  </style>
 </head>
-<style>
-	.mid
-	{
-		background :#e1e1e1;
-	}
-	.user
-	{
-		font-weight: bold;
-	}
-</style>
-<body onload="window.print();">
-<% local i for i=1, env.pages do%>
+<body>
+	<script type="text/javascript" src="public/js/prototype/prototype.js"></script>
+	<script type="text/javascript" src="public/js/bramus/jsProgressBarHandler.js"></script>
+	<script type="text/javascript">
+		function bar (){
+			// second manual example : multicolor (and take all other default paramters)
+			manualPB2 = new JS_BRAMUS.jsProgressBar(
+						$('progressbar'),
+						0,
+						{
+							barImage	: Array(
+								'public/images/bramus/percentImage_back4.png',
+								'public/images/bramus/percentImage_back3.png',
+								'public/images/bramus/percentImage_back2.png',
+								'public/images/bramus/percentImage_back1.png'
+							)
+						}
+					);
+		}
+	</script>
+	
+	<span id="progressbar">[ Loading Progress Bar ]</span>
+	<script> bar();</script> <% local pc = 0 %>
+<% local i for i=1, env.pages do --  onload="window.print();"%>
 <%!env.dir.."/cardTable.template"%>
 <% end %>
+	<script>
+		manualPB2.setPercentage('100');
+		hideStuff("progressbar");
+		window.print()
+	</script>
+
 </body>
 </html>     
