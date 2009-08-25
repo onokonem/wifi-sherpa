@@ -13,6 +13,8 @@
 	}
 </style>
 <body onload="window.print();">
-$tables
+<% local i for i=1, env.pages do%>
+<%!env.dir.."/cardTable.template"%>
+<% end %>
 </body>
 </html>     
