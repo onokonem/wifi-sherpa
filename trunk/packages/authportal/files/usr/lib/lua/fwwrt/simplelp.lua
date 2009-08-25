@@ -157,7 +157,8 @@ return function(self, env)
 
 self.out = ""
 
-local function echo(...)     return fwwrt.simplelp.echo(self, ...)    end
+local echo = env.echo or function(...) return fwwrt.simplelp.echo(self, ...) end
+
 local function inc(fileName) return fwwrt.simplelp.inc(fileName, env) end
 local function req(fileName) return fwwrt.simplelp.req(fileName, env) end
 
