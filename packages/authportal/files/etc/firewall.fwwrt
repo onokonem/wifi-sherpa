@@ -1,3 +1,11 @@
+#!/bin/sh
+
+getBool() {
+p="`uci get $1|tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz'`"
+test "$p" = "yes" -o "$p" = "true" -o "$p" = "on" -o "$p" = "1" && echo "true" || echo "false"
+}
+
+
 internalAddr="`uci get network.lan.ipaddr`"              || exit 1
 internalMask="`uci get network.lan.netmask`"             || exit 1
 eval `ipcalc.sh $internalAddr $internalMask`             || exit 1
@@ -8,8 +16,9 @@ addrRange="$NETWORK/$PREFIX"
 internalIface="br-lan"
 
 externalIface="`  uci get network.wan.ifname`"           || exit 1
-externalAdmin="`  uci get fwwrt.firewall.externalAdmin`" || exit 1
-squidEnabled="`   uci get fwwrt.firewall.squidEnabled`"  || exit 1
+externalAdmin="`  getBool fwwrt.firewall.externalAdmin`" || exit 1
+squidEnabled="`   getBool fwwrt.firewall.squidEnabled`"  || exit 1
+fixMTU="`         getBool fwwrt.firewall.fixMTU`"        || exit 1
 unauthHttpPort="` uci get fwwrt.ports.unauth`"           || exit 1
 unauthHttpsPort="`uci get fwwrt.ports.unauthSSL`"        || exit 1
 unauthDnsPort="`  uci get fwwrt.ports.unauthDNS`"        || exit 1
@@ -17,9 +26,12 @@ authHttpPort="`   uci get fwwrt.ports.auth`"             || exit 1
 authHttpsPort="`  uci get fwwrt.ports.authSSL`"          || exit 1
 squidPort="`      uci get fwwrt.ports.squid`"            || exit 1
 sshPort="`        uci get fwwrt.ports.ssh`"              || exit 1
-verbose="`        uci get fwwrt.log.verbose`"            || exit 1
+verbose="`        getBool fwwrt.log.verbose`"            || exit 1
 IPTABLES="`       uci get fwwrt.firewall.iptables`"      || exit 1
 
+
+test "$fixMTU" == "true" &&
+$IPTABLES -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 
 $IPTABLES -t nat -N authorized_INPUT
 test "$verbose" == "true" &&
@@ -39,7 +51,7 @@ $IPTABLES -t nat -A authorized_PREROUTING -j LOG --log-level debug --log-prefix 
 $IPTABLES -t nat -A authorized_PREROUTING -d "$internalAddr" -j authorized_INPUT
 #$IPTABLES -t nat -A authorized_PREROUTING -d "$externalAddr" -j authorized_INPUT
 #
-test "$squidEnabled" == "YES" &&  
+test "$squidEnabled" == "true" &&  
 $IPTABLES -t nat -A authorized_PREROUTING -p tcp -m tcp --dport 80 -j DNAT --to-destination "$internalAddr":"$squidPort"
 $IPTABLES -t nat -A authorized_PREROUTING -j ACCEPT
 
@@ -131,7 +143,7 @@ $IPTABLES        -A unauthorized_INPUT -j LOG --log-level debug --log-prefix 'un
 $IPTABLES -A unauthorized_INPUT -p udp -m udp --sport 68 --dport 67 -i "$internalIface"         -j ACCEPT 
 $IPTABLES -A unauthorized_INPUT -p tcp -m tcp            --dport 22       -m state --state NEW  -j ACCEPT
 #
-test "$externalAdmin" == "YES" &&     
+test "$externalAdmin" == "true" &&     
 $IPTABLES -A unauthorized_INPUT -p tcp -m tcp --dport  "$unauthHttpsPort" -m state --state NEW  -j ACCEPT
 #
 #
@@ -144,3 +156,4 @@ $IPTABLES -A INPUT_cleanup -j DROP
 $IPTABLES        -I input_rule                 -j INPUT_cleanup
 $IPTABLES        -I input_rule                 -j unauthorized_INPUT
 $IPTABLES        -I input_rule -s "$addrRange" -j unauthorized_INPUT_local
+
