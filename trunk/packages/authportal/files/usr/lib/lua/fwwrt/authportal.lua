@@ -200,7 +200,7 @@ function processLoginForm(wsapi_env) --doLogin, show logout
     if (not (request.POST and request.POST.username and request.POST.password and request.POST.origUrl))
     	then
 		fwwrt.util.logger("LOG_ERR", "Bad request from '"..wsapi_env.REMOTE_ADDR.."'")
-		return 302, redirectHeaders("http://"..hostname.."/?badRequest"), coroutine.wrap(yieldSleep)
+		return showLoginForm(wsapi_env, "badRequest", "")
     end
 
     local authorized, userid, totalTimeUsed, totalTimeLim = pcall(checkLogin, request.POST.username)
