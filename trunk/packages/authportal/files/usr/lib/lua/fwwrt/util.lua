@@ -120,6 +120,7 @@ function toboolean(param)
 local converters = {['string']  = tostring
                    ,['number']  = function(param) return assert(tonumber(param), "'"..tostring(param).."' is not number") end 
                    ,['boolean'] = toboolean
+                   ,['bool']    = toboolean
                    }
 
 function uciGet(paramName, paramType)
