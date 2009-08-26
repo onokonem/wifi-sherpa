@@ -3,6 +3,10 @@
 	<title>wifi access administration</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
 	<style type="text/css">
+	.card {
+    font-family: Verdana, Arial, Helvetica, sans-serif; 
+    font-size: 8pt; /* Размер шрифта в пунктах */ 
+   }
 .mid
 	{
 		background :#e1e1e1;
@@ -36,15 +40,30 @@
 	
 	<span id="progressbar" style="display: none;">[ Идет кеширование... ]</span>
 	<script>bar();manualPB2.setPercentage('100')</script>
-<form action="$actionUrl" method="post" name="gen">
+<form action="<%=env.actionUrl%>" method="post" name="gen">
 
 	 Распечатать <INPUT TYPE="text" name="cardsCount" SIZE="3" value="10"> карточек
 		
 <input type='submit' name='generate' value='Печать'>
-$card
+<% local pc = 0 %>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<table border = 1 id="card">
+	<tr height="54mm">
+		<td width="550mm">
+<%!env.dir.."/card.template"%>
+		</td>
+	</tr>
+</table>
 </form>
 <br>
-<form action="$actionUrl" method="post" name = "out">
+<form action="<%=env.actionUrl%>" method="post" name = "out">
 	<input type='submit' name='logout' value='logout'>
 </form>
 

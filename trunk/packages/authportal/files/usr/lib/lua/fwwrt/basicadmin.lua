@@ -9,21 +9,23 @@
 module("fwwrt.basicadmin", package.seeall)
 
 --require "profiler"
---prof=0
+--prof=0 date 08261515109
 
 require "luasql.sqlite"
 
 require "fwwrt.authportal"
 require "fwwrt.crypt"
 require "fwwrt.simplelp"
+require "fwwrt.util"
 
 local webDir     = fwwrt.util.uciGet('httpd.httpd.home',            'string')
 local hostname   = fwwrt.util.uciGet('fwwrt.authportal.httpsName',  'string')
 local ssid       = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string')
 local cardGenTempl = fwwrt.util.fileToVariable(webDir.."/cardGen.template")
 
-local env = {dir = webDir, ssid=ssid}
-local cards = fwwrt.simplelp.loadFile(webDir.."/cards.template", env)
+--local env = {dir = webDir, ssid=ssid}
+local cards = fwwrt.simplelp.loadFile(webDir.."/cards.template", {dir = webDir, ssid=ssid})
+local cardGen = fwwrt.simplelp.loadFile(webDir.."/cardGen.template", {dir = webDir})
 
 local statement = {begin= "BEGIN TRANSACTION",
 					commit = "END TRANSACTION",
@@ -82,7 +84,7 @@ local function insertSeveralUers(several)
 			success, result = pcall(fwwrt.dbBackend.bindAndExecute,statement.insert10users,v)
 		end
 		fwwrt.dbBackend.bindAndExecute(statement.commit)
-		if tries > 1 then print ("tries = '"..tries.."'") end
+		if tries > 1 then fwwrt.util.logger("LOG_ERR","tries = '"..tries.."'") end
 	until success or tries > 50
 	if not success then
 		error(string.format("user is not added in %d tries: %s", tries, tostring(result)))
@@ -151,7 +153,7 @@ function doAdmin(wsapi_env, request) --generate cards, create users
 	coroutine.yield(cards:run(env))
 --	test(wsapi_env)
 	local time2=os.time()
-	print("generating users done in "..time2-time1.." seconds")
+--	fwwrt.util.logger("LOG_DEBUG","generating users done in "..time2-time1.." seconds")
 end
 
 function showAdminLogin(wsapi_env, headers)
@@ -165,17 +167,20 @@ end
 
 function showBasicAdminForm(wsapi_env, operator)
 	local template  = cardGenTempl
-	local values = {actionUrl = "https://"..wsapi_env.SERVER_NAME.."/admin"} --, user = fwwrt.crypt.randomString()
-	local process = function () coroutine.yield(cosmo.fill(template, values)) end
+	local values = {
+		pcdiff = 87, actionUrl = "https://"..wsapi_env.SERVER_NAME.."/admin",
+		user = function () return fwwrt.crypt.randomString() end
+		} --, user = fwwrt.crypt.randomString()
+	local process = function () coroutine.yield(cardGen:run(values)) end
 	return 200, makeCookieHeaders(wsapi_env, operator), coroutine.wrap(process)
 end
 
 function processBasicAdminForm(wsapi_env) --main, 
 	local request  = wsapi.request.new(wsapi_env)
-	print("cookie = '"..tostring(wsapi_env.HTTP_COOKIE).."'")
+--	fwwrt.util.logger("LOG_DEBUG","cookie = '"..tostring(wsapi_env.HTTP_COOKIE).."'")
 	local operator = checkCookie(wsapi_env.HTTP_COOKIE, wsapi_env.REMOTE_ADDR)
 	                 or checkLoginPost(request)
-	print("operator = "..tostring(operator))
+--	fwwrt.util.logger("LOG_DEBUG","operator = "..tostring(operator))
 	if ( operator ) then
 		if (request.method == 'POST' and request.POST.generate) then
 			local callDoAdmin = function() return doAdmin(wsapi_env, request) end

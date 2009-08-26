@@ -9,7 +9,6 @@
 
 module("fwwrt.authportal", package.seeall)
 
-require "wsapi.util"
 require "wsapi.request"
 require "cosmo"
 require "luasql.sqlite"
@@ -17,11 +16,16 @@ require "luasql.sqlite"
 require "fwwrt.util"
 require "fwwrt.iptkeeper"
 require "fwwrt.dbBackend"
+require "fwwrt.simplelp"
 
-local webDir     = fwwrt.util.uciGet('httpd.httpd.home',            'string')
-local hostname   = fwwrt.util.uciGet('fwwrt.authportal.httpsName',  'string')
-local loginDelay = fwwrt.util.uciGet('fwwrt.authportal.logindelay', 'number')
-local dbFile     = fwwrt.util.uciGet('fwwrt.authportal.dbFile',     'string')
+local webDir        = fwwrt.util.uciGet('httpd.httpd.home',            'string')
+local hostname      = fwwrt.util.uciGet('fwwrt.authportal.httpsName',  'string')
+local loginDelay    = fwwrt.util.uciGet('fwwrt.authportal.logindelay', 'number')
+local dbFile        = fwwrt.util.uciGet('fwwrt.authportal.dbFile',     'string')
+local showLogout    = fwwrt.util.uciGet('fwwrt.show.logout',           'boolean')
+local showDetails   = fwwrt.util.uciGet('fwwrt.show.details',          'boolean')
+local showAdminLink = fwwrt.util.uciGet('fwwrt.show.adminlink',        'boolean')
+
 --local ssid       = fwwrt.util.uciGet('wireless.wifi-iface.ssid',  'string')
 
 local statement = {allActive  = [[SELECT DISTINCT
@@ -58,7 +62,7 @@ local statement = {allActive  = [[SELECT DISTINCT
                                 ]]
                   ,updateUser = "UPDATE users set totalTimeUsed = ? where userid = ?"
                   ,addActive  = "INSERT INTO activeusers (ipaddr, userid, logintime) VALUES (?,?,?)"
-				  ,delActive  = "DELETE FROM activeusers WHERE userid = ?"
+                  ,delActive  = "DELETE FROM activeusers WHERE userid = ?"
                   ,userByName = [[SELECT DISTINCT
                                    u.userid          AS userid
                                   ,t.totalTimeLim    AS totalTimeLim
@@ -77,7 +81,7 @@ local statement = {allActive  = [[SELECT DISTINCT
                                   WHERE u.username = ?
                                 ]]
                   ,tarifById  = "SELECT * FROM tarifs WHERE tarifid = ?"
-                  }
+}
 
 dbCon = fwwrt.dbBackend.connect()
 
@@ -103,12 +107,11 @@ function yieldSleep()
 end
 
 function showLogoutForm(wsapi_env) --showlogin
-	local template  = fwwrt.util.fileToVariable(webDir.."/showLogout.template")
 	local values = {actionUrl = "http://"..hostname.."/logout"
 	               ,origUrl   = "http://"..hostname.."/"
 	               }
-
-	local process = function () coroutine.yield(cosmo.fill(template, values)) end
+	local template  = fwwrt.simplelp.loadFile(webDir.."/showLogout.template", values)
+	local process = function () coroutine.yield(template:run(values)) end
 	return 200, commonHeaders, coroutine.wrap(process)
 end
 
@@ -164,21 +167,24 @@ function doLogin(ip, userid)
 	return (cur == 1)
 end
 
-function showLoginForm(wsapi_env, reason, message) --showlogin
+function showLoginForm(wsapi_env, oriurl, reason, message) --showlogin
     reason = reason or ""
 	local loginText = ""
 	local wrong     = ""
 	local pass      = fwwrt.util.fileToVariable(webDir.."/loginNoPass.template")
 	local template  = fwwrt.util.fileToVariable(webDir.."/showLogin.template")
 	local values    = {actionUrl = "https://"..hostname.."/"
-	                  ,origUrl   = "http://"..wsapi_env.SERVER_NAME..wsapi_env.PATH_INFO
 	                  ,loginText = loginText
 	                  ,pass      = pass
 	                  ,wrong     = wrong
 	                  ,reason    = reason
 	                  }
+	local env = {
+		origUrl   = oriurl or "http://"..wsapi_env.SERVER_NAME..wsapi_env.PATH_INFO
+	}
+	local template = fwwrt.simplelp.loadFile(webDir.."/showLogin.template", values)
 
-	local process = function () coroutine.yield(cosmo.fill(template, values)) end
+	local process = function () coroutine.yield(template:run(env)) end
 	return 200, commonHeaders, coroutine.wrap(process)
 end
 
@@ -198,47 +204,54 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 	local request  = wsapi.request.new(wsapi_env)
 
     if (not (request.POST and request.POST.username and request.POST.password and request.POST.origUrl))
-    	then
+		then --hacking?
 		fwwrt.util.logger("LOG_ERR", "Bad request from '"..wsapi_env.REMOTE_ADDR.."'")
-		return showLoginForm(wsapi_env, "badRequest", "")
+		return showLoginForm(wsapi_env, hostname, "bad request", "not a proper post request"), coroutine.wrap(yieldSleep)
     end
 
     local authorized, userid, totalTimeUsed, totalTimeLim = pcall(checkLogin, request.POST.username)
 
     if (not authorized) then
 		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..userid)
-		return showLoginForm(wsapi_env, "badLogin", userid)
+		return showLoginForm(wsapi_env, request.POST.origUrl, "badLogin", userid)
 	end
 	
-
 	local expire = os.time() + totalTimeLim - totalTimeUsed
-	print("limit = '"..totalTimeLim.."' used = '"..totalTimeUsed..
-	"' lim - used = '"..totalTimeLim-totalTimeUsed.."'")
-	print(request.POST.username .." expires on "..os.date(t, expire).."\n logged in on "..os.date())
+	
+	if expire <= 0 then
+		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..userid.." – expired")
+		return showLoginForm(wsapi_env, request.POST.origUrl, "expired", userid)
+	end
+	
+--	fwwrt.util.logger("LOG_DEBUG","limit = '"..totalTimeLim.."' used = '"..totalTimeUsed..
+--	"' lim - used = '"..totalTimeLim-totalTimeUsed.."'")
+--	fwwrt.util.logger("LOG_DEBUG",request.POST.username .." expires on "..os.date(t, expire).."\n logged in on "..os.date())
 	
     if (not fwwrt.iptkeeper.logIpIn(wsapi_env.REMOTE_ADDR, expire))
     	then
 		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': address unknown")
-		return showLoginForm(wsapi_env, "unknownIP")
+		return showLoginForm(wsapi_env, request.POST.origUrl, "unknownIP")
 	end
 	
 	doLogin(wsapi_env.REMOTE_ADDR, userid) -- no pcall here!
 	
-	local template = fwwrt.util.fileToVariable(webDir.."/showLogout.template")
-	
 	-- fwwrt.util.logger("LOG_INFO", "User '"..request.POST.username.."' logged in on '"..wsapi_env.REMOTE_ADDR.."'")
 
-	local values = {actionUrl = "https://"..hostname.."/"
-	               ,origUrl   = request.POST.origUrl
-	               }
-	
+	local values = {actionUrl = "https://"..hostname.."/"}
+	local template = fwwrt.simplelp.loadFile(webDir.."/showLogout.template", values)
+	local env = {
+		origUrl = request.POST.origUrl
+--		ip = wsapi_env.REMOTE_ADDR, user = <%=env.user%> ip = <%=env.ip%> expire = <%=env.expire%> logintime = <%=env.logintime%>
+--		user = request.POST.username,
+--		expire = expire
+		}
 	local process = function ()
-	    yieldSleep()
-		coroutine.yield(cosmo.fill(template, values))
+		yieldSleep()
+		coroutine.yield(template:run(env))
 		coroutine.yield("<pre>"..fwwrt.util.printTable(wsapi_env, "rwsapi_env", ".", 10).."</pre>")
 		coroutine.yield("<pre>"..fwwrt.util.printTable(request,   "request",    ".", 10).."</pre>")
 		end
-	
+		
 	return 200, commonHeaders, coroutine.wrap(process)
 end
 

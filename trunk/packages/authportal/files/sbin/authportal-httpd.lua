@@ -50,7 +50,11 @@ function   authHttpHandler  (wsapi_env) return printInfo(wsapi_env, "authHttpHan
 function   authHttpsHandler (wsapi_env) return printInfo(wsapi_env, "authHttpsHandler")   end
 function   adminStub        (wsapi_env) return printInfo(wsapi_env, "adminStub")   end
 
-function  callbackHandler   () fwwrt.iptkeeper.updateAccess() return false end
+function  callbackHandler   ()
+	print("callbackHandler") io.flush()
+	fwwrt.iptkeeper.updateAccess()
+	return false
+	end
 
 local ssl = {mode        = "server"
             ,protocol    = "sslv23"

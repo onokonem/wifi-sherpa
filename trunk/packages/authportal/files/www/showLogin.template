@@ -4,10 +4,10 @@
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
  </head>
  <body>
- <FORM ACTION="$actionUrl" METHOD="POST" NAME="AuthForm">
-  <INPUT TYPE="hidden" name="origUrl" VALUE="$origUrl">
+<div align="right"><a href="<%:actionUrl%>admin">админка</a></div>
+ <FORM ACTION="<%:actionUrl%>" METHOD="POST" NAME="AuthForm">
+  <INPUT TYPE="hidden" name="origUrl" VALUE="<%=env.origUrl%>">
   <INPUT TYPE="hidden"  value="nopass" name="password" SIZE="16" MAXLENGTH="64"/>
-	$loginText
   <table align="center" WIDTH="70%" HEIGHT="100%">
    <tr ALIGN="left" VALIGN="middle">
     <td>
@@ -17,7 +17,7 @@
 		<INPUT TYPE="text" name="username" SIZE="16" MAXLENGTH="64"/>	
 		<INPUT TYPE="submit" name="login" VALUE="войти в сеть"/>
 		</p>
-	    <p/>$reason</p>
+	    <p/><%=env.reason%></p>
     </td>
    </tr>
   </table>
