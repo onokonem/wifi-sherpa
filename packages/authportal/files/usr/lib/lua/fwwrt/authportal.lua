@@ -98,11 +98,8 @@ function redirectHeaders(path)
 	       }
 end
 
-local redirectBody = "<htmp><head><title>302 Redirect</title></head><body>302 Redirect</body></html>"
-
-function yeldSleep()
-	fwwrt.util.yeldSleep(loginDelay, "yeldSleep")
-	coroutine.yield(redirectBody)
+function yieldSleep()
+	fwwrt.util.yieldSleep(loginDelay, "")
 end
 
 function showLogoutForm(wsapi_env) --showlogin
@@ -122,7 +119,7 @@ function processLogoutForm(wsapi_env) --showlogin
     	then return showLogoutForm(wsapi_env) end
 
     fwwrt.iptkeeper.logIpOut(wsapi_env.REMOTE_ADDR)
-	return 302, redirectHeaders("http://"..hostname.."/"), coroutine.wrap(yeldSleep)
+	return 302, redirectHeaders("http://"..hostname.."/"), coroutine.wrap(yieldSleep)
 end
 
 function doLogout(ip)
@@ -203,7 +200,7 @@ function processLoginForm(wsapi_env) --doLogin, show logout
     if (not (request.POST and request.POST.username and request.POST.password and request.POST.origUrl))
     	then
 		fwwrt.util.logger("LOG_ERR", "Bad request from '"..wsapi_env.REMOTE_ADDR.."'")
-		return 302, redirectHeaders("http://"..hostname.."/?badRequest"), coroutine.wrap(yeldSleep)
+		return 302, redirectHeaders("http://"..hostname.."/?badRequest"), coroutine.wrap(yieldSleep)
     end
 
     local authorized, userid, totalTimeUsed, totalTimeLim = pcall(checkLogin, request.POST.username)
@@ -236,7 +233,7 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 	               }
 	
 	local process = function ()
-	    yeldSleep()
+	    yieldSleep()
 		coroutine.yield(cosmo.fill(template, values))
 		coroutine.yield("<pre>"..fwwrt.util.printTable(wsapi_env, "rwsapi_env", ".", 10).."</pre>")
 		coroutine.yield("<pre>"..fwwrt.util.printTable(request,   "request",    ".", 10).."</pre>")

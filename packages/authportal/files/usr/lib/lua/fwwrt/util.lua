@@ -155,7 +155,7 @@ end
 -- Time methods --------------------------------------------------------------
 ------------------------------------------------------------------------------
 
-function yeldSleep(t, yieldParam)
+function yieldSleep(t, yieldParam)
 	local curTime = os.time()
 	while ((os.time() - curTime) < t) do coroutine.yield(yieldParam) end
 	end
