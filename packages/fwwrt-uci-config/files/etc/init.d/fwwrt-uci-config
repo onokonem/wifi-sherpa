@@ -49,6 +49,11 @@ config 'fwwrt' 'authportal'
     option 'httpsName'       'hot.spot'
     option 'dbType'          'sqlite2'
     option 'dbFile'          '/usr/local/fwwrt/authportal.sqlite2'
+
+config 'fwwrt' 'show'
+    option 'logout'      'true'
+    option 'details'     'true'
+    option 'adminlink'   'true'
 EOF
 
 		uci commit
