@@ -1,0 +1,3 @@
+<% if fwwrt.util.uciGet('fwwrt.show.adminlink',        'boolean') then %>
+<div align="right"><a href="https://<%=fwwrt.util.uciGet('fwwrt.authportal.httpsName',  'string')%>/admin">админка</a></div>
+<% end %>

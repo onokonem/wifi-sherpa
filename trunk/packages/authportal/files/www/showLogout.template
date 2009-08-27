@@ -5,7 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
  </head>
  <body>
-  <div align="right"><a href="https://hot.spot/admin">админка</a></div>
+  <%!env.dir.."/adminLink.template"%>
   <table ALIGN="center" VALIGN="middle" WIDTH="100%" HEIGHT="100%">
    <tr ALIGN="center" VALIGN="middle">
     <td>
