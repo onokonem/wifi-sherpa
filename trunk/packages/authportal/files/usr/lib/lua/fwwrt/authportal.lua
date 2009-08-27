@@ -164,7 +164,7 @@ function doLogin(ip, userid)
 end
 
 function showLoginForm(wsapi_env, oriurl, reason, message) --showlogin
-    reason = reason or ""
+	local reason = reason or ""
 	local loginText = ""
 	local wrong     = ""
 	local pass      = fwwrt.util.fileToVariable(webDir.."/loginNoPass.template")
@@ -174,10 +174,10 @@ function showLoginForm(wsapi_env, oriurl, reason, message) --showlogin
 	                  loginText = loginText
 	                  ,pass      = pass
 	                  ,wrong     = wrong
-	                  ,reason    = reason
 	                  }
 	local env = {
-		origUrl   = oriurl or "http://"..wsapi_env.SERVER_NAME..wsapi_env.PATH_INFO
+		origUrl   = oriurl or "http://"..wsapi_env.SERVER_NAME..wsapi_env.PATH_INFO,
+		reason    = reason
 	}
 	local template = fwwrt.simplelp.loadFile(webDir.."/showLogin.template", values)
 
@@ -189,12 +189,12 @@ function checkLogin(user)
 	local cur = fwwrt.dbBackend.bindAndExecute(statement.userByName
 	                                          ,{'TEXT', user}
 	                                          )
-	-- row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
-	
-	local info = assert(cur:fetch({}, "a"), "user doesn't exist") --change userid to expire or hwatever
-
+--	local info = assert(cur:fetch({}, "a"), "user doesn't exist") --change userid to expire or hwatever
+	local info = cur:fetch({}, "a")
 	cur:close()
-	return info.userid, info.totalTimeUsed, info.totalTimeLim
+--	print("db, userid = "..tostring(info.userid))
+	if info then return true, info.userid, info.totalTimeUsed, info.totalTimeLim end
+	return nil
 end
 
 function processLoginForm(wsapi_env) --doLogin, show logout
@@ -209,12 +209,14 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 
 	if request.POST.logout then return processLogoutForm(wsapi_env) end
 
-    local authorized, userid, totalTimeUsed, totalTimeLim = pcall(checkLogin, request.POST.username)
+--    local authorized, userid, totalTimeUsed, totalTimeLim = pcall(checkLogin, request.POST.username)
+    local authorized, userid, totalTimeUsed, totalTimeLim = checkLogin(request.POST.username)
+	print("userid = "..tostring(userid) )
 
     if (not authorized) then
-		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..userid)
-		return showLoginForm(wsapi_env, request.POST.origUrl, "badLogin", userid)
-	end
+		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..tostring(userid))
+		return showLoginForm(wsapi_env, request.POST.origUrl, "code incorrect: '"..request.POST.username.."'")
+	end --                  (wsapi_env, oriurl, reason, message)
 	
 	local expire = os.time() + totalTimeLim - totalTimeUsed
 	
