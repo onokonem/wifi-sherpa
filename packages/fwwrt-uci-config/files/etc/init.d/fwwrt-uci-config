@@ -37,7 +37,7 @@ config 'fwwrt' 'firewall'
     option 'squidEnabled'    'no'
     option 'iptables'        '/usr/sbin/iptables'
     option 'includepath'     '/etc/firewall.fwwrt'
-    option 'fixMTU'          'yes'
+    option 'fixMTU'          '1350'
 
 config 'fwwrt' 'dhcp'
     option 'kickoffTimeout'  '5m'

@@ -1,10 +1,13 @@
 #!/bin/sh
 
-getBool() {
-p="`uci get $1|tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz'`"
-test "$p" = "yes" -o "$p" = "true" -o "$p" = "on" -o "$p" = "1" && echo "true" || echo "false"
+getParam() {
+uci get $1|head -n 1|awk {'print $1'}|tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz'
 }
 
+getBool() {
+p="`getParam $1`"
+test "$p" = "yes" -o "$p" = "true" -o "$p" = "on" -o "$p" = "1" && echo "true" || echo "false"
+}
 
 internalAddr="`uci get network.lan.ipaddr`"              || exit 1
 internalMask="`uci get network.lan.netmask`"             || exit 1
@@ -18,7 +21,7 @@ internalIface="br-lan"
 externalIface="`  uci get network.wan.ifname`"           || exit 1
 externalAdmin="`  getBool fwwrt.firewall.externalAdmin`" || exit 1
 squidEnabled="`   getBool fwwrt.firewall.squidEnabled`"  || exit 1
-fixMTU="`         getBool fwwrt.firewall.fixMTU`"        || exit 1
+fixMTU="`         getParam fwwrt.firewall.fixMTU`"       || exit 1
 unauthHttpPort="` uci get fwwrt.ports.unauth`"           || exit 1
 unauthHttpsPort="`uci get fwwrt.ports.unauthSSL`"        || exit 1
 unauthDnsPort="`  uci get fwwrt.ports.unauthDNS`"        || exit 1
@@ -30,8 +33,11 @@ verbose="`        getBool fwwrt.log.verbose`"            || exit 1
 IPTABLES="`       uci get fwwrt.firewall.iptables`"      || exit 1
 
 
-test "$fixMTU" == "true" &&
-$IPTABLES -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+test "$fixMTU" -gt 0 && {
+test "$verbose" == "true" &&
+$IPTABLES -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j LOG --log-level debug --log-prefix 'fixMTU '
+$IPTABLES -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss "$fixMTU"
+}
 
 $IPTABLES -t nat -N authorized_INPUT
 test "$verbose" == "true" &&
