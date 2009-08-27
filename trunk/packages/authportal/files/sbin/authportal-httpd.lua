@@ -51,7 +51,6 @@ function   authHttpsHandler (wsapi_env) return printInfo(wsapi_env, "authHttpsHa
 function   adminStub        (wsapi_env) return printInfo(wsapi_env, "adminStub")   end
 
 function  callbackHandler   ()
-	print("callbackHandler") io.flush()
 	fwwrt.iptkeeper.updateAccess()
 	return false
 	end

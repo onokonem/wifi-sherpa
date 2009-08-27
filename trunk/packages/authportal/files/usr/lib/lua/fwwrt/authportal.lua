@@ -169,8 +169,9 @@ function showLoginForm(wsapi_env, oriurl, reason, message) --showlogin
 	local wrong     = ""
 	local pass      = fwwrt.util.fileToVariable(webDir.."/loginNoPass.template")
 	local template  = fwwrt.util.fileToVariable(webDir.."/showLogin.template")
-	local values    = {actionUrl = "https://"..hostname.."/"
-	                  ,loginText = loginText
+	local values    = {actionUrl = "https://"..hostname.."/",
+						dir = webDir,
+	                  loginText = loginText
 	                  ,pass      = pass
 	                  ,wrong     = wrong
 	                  ,reason    = reason
@@ -199,10 +200,11 @@ end
 function processLoginForm(wsapi_env) --doLogin, show logout
 	local request  = wsapi.request.new(wsapi_env)
 
-    if (not (request.POST and request.POST.username and request.POST.password and request.POST.origUrl and request.POST.logout))
+    if (not (request.POST and ((request.POST.username and request.POST.password and request.POST.origUrl) or request.POST.logout))) -- oh my...
 		then --hacking?
-		fwwrt.util.logger("LOG_ERR", "Bad request from '"..wsapi_env.REMOTE_ADDR.."'")
-		return showLoginForm(wsapi_env, hostname, "bad request", "not a proper post request"), coroutine.wrap(yieldSleep)
+		fwwrt.util.logger("LOG_ERR", "Bad request from '"..wsapi_env.REMOTE_ADDR.."': not a proper POST")
+		coroutine.wrap(yieldSleep)
+		return showLoginForm(wsapi_env, hostname, "bad request", "not a proper post request")
     end
 
 	if request.POST.logout then return processLogoutForm(wsapi_env) end
@@ -221,9 +223,10 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 		return showLoginForm(wsapi_env, request.POST.origUrl, "expired", userid)
 	end
 	
---	fwwrt.util.logger("LOG_DEBUG","limit = '"..totalTimeLim.."' used = '"..totalTimeUsed..
---	"' lim - used = '"..totalTimeLim-totalTimeUsed.."'")
---	fwwrt.util.logger("LOG_DEBUG",request.POST.username .." expires on "..os.date(t, expire).."\n logged in on "..os.date())
+	fwwrt.util.logger("LOG_DEBUG","limit = '"..totalTimeLim.."' used = '"..totalTimeUsed..
+		"' lim - used = '"..totalTimeLim-totalTimeUsed.."'")
+	fwwrt.util.logger("LOG_DEBUG",request.POST.username .." expires on "..os.date(t, expire)..
+		" logged in on "..os.date())
 	
     if (not fwwrt.iptkeeper.logIpIn(wsapi_env.REMOTE_ADDR, expire))
     	then
@@ -233,9 +236,9 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 	
 	doLogin(wsapi_env.REMOTE_ADDR, userid) -- no pcall here!
 	
-	-- fwwrt.util.logger("LOG_INFO", "User '"..request.POST.username.."' logged in on '"..wsapi_env.REMOTE_ADDR.."'")
+	fwwrt.util.logger("LOG_INFO", "User '"..request.POST.username.."' logged in on '"..wsapi_env.REMOTE_ADDR.."'")
 
-	local values = {actionUrl = "https://"..hostname.."/"}
+	local values = {actionUrl = "https://"..hostname.."/", dir = webDir}
 	local template = fwwrt.simplelp.loadFile(webDir.."/showLogout.template", values)
 	local env = {
 		origUrl = request.POST.origUrl
