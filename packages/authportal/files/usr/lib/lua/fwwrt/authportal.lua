@@ -117,12 +117,8 @@ end
 
 function processLogoutForm(wsapi_env) --showlogin
 	local request  = wsapi.request.new(wsapi_env)
-
-    if (not (request.POST and request.POST.logout))
-    	then return showLogoutForm(wsapi_env) end
-
-    fwwrt.iptkeeper.logIpOut(wsapi_env.REMOTE_ADDR)
-	return 302, redirectHeaders("http://"..hostname.."/"), coroutine.wrap(yieldSleep)
+	fwwrt.iptkeeper.logIpOut(wsapi_env.REMOTE_ADDR)
+	return showLoginForm(wsapi_env, "http://"..hostname.."/", "logged out successfully")
 end
 
 function doLogout(ip)
@@ -203,11 +199,13 @@ end
 function processLoginForm(wsapi_env) --doLogin, show logout
 	local request  = wsapi.request.new(wsapi_env)
 
-    if (not (request.POST and request.POST.username and request.POST.password and request.POST.origUrl))
+    if (not (request.POST and request.POST.username and request.POST.password and request.POST.origUrl and request.POST.logout))
 		then --hacking?
 		fwwrt.util.logger("LOG_ERR", "Bad request from '"..wsapi_env.REMOTE_ADDR.."'")
 		return showLoginForm(wsapi_env, hostname, "bad request", "not a proper post request"), coroutine.wrap(yieldSleep)
     end
+
+	if request.POST.logout then return processLogoutForm(wsapi_env) end
 
     local authorized, userid, totalTimeUsed, totalTimeLim = pcall(checkLogin, request.POST.username)
 
