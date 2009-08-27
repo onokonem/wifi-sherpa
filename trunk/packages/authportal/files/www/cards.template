@@ -1,21 +1,12 @@
 <html>
 <head>
 	<title>wifi access administration</title>
+<%!env.dir.."/commonHead.template"%>
 	<script type="text/javascript">
 		function hideStuff(id) {
 				document.getElementById(id).style.display = 'none';
 		}
 	</script>
-	<style type="text/css">
-   P {
-    font-family: Verdana, Arial, Helvetica, sans-serif; 
-    font-size: 8pt; /* Размер шрифта в пунктах */ 
-   }
-   UL {
-    font-family: Verdana, Arial, Helvetica, sans-serif; 
-    font-size: 8pt; /* Размер шрифта в пунктах */ 
-   }
-  </style>
 </head>
 <body>
 	<script type="text/javascript" src="public/js/prototype/prototype.js"></script>

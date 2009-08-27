@@ -130,13 +130,14 @@ function makeNoCookieHeaders()
 	return cookedHeaders
 end
 
-function doAdmin(wsapi_env, request) --generate cards, create users
+function doAdmin(wsapi_env, request, operator) --generate cards, create users
 	local time1=os.time()
 	local width="40%"
 	local height="85mm"
-	local countP = request.POST.count or math.floor((request.POST.cardsCount-1)/10)+1
---	print(math.floor(9/10)+1)
---	local note = request.POST.note
+	local countP = request.POST.count or math.floor((fwwrt.util.a2i(request.POST.cardsCount)-1)/10)+1
+	if countP <= 0 then -- a2i return 0 if not a number, and math.floor((0-1)/10)+1 == 0, so
+		return showBasicAdminForm(wsapi_env, operator, "Введите, пожалуйста, число!")
+	end
 	local pcdiff = 10/countP
 	local useIn = {}
 	useIn.day = 24*60*60
@@ -165,10 +166,13 @@ function showAdminLogin(wsapi_env, headers)
 	return 200, headers, coroutine.wrap(process)
 end
 
-function showBasicAdminForm(wsapi_env, operator)
+function showBasicAdminForm(wsapi_env, operator, reason, message)
+	local reason = reason or ""
+	local message = message or ""
 	local template  = cardGenTempl
 	local values = {
 		pcdiff = 87, actionUrl = "https://"..wsapi_env.SERVER_NAME.."/admin",
+		reason = reason,
 		user = function () return fwwrt.crypt.randomString() end
 		} --, user = fwwrt.crypt.randomString()
 	local process = function () coroutine.yield(cardGen:run(values)) end
@@ -183,7 +187,7 @@ function processBasicAdminForm(wsapi_env) --main,
 --	fwwrt.util.logger("LOG_DEBUG","operator = "..tostring(operator))
 	if ( operator ) then
 		if (request.method == 'POST' and request.POST.generate) then
-			local callDoAdmin = function() return doAdmin(wsapi_env, request) end
+			local callDoAdmin = function() return doAdmin(wsapi_env, request, operator) end
 			return 200, makeCookieHeaders(wsapi_env, operator), coroutine.wrap(callDoAdmin)
 		elseif (request.method == 'POST' and request.POST.logout) then
 			return showAdminLogin(wsapi_env, makeNoCookieHeaders())

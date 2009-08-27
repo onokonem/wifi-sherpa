@@ -236,7 +236,10 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 		return showLoginForm(wsapi_env, request.POST.origUrl, "unknownIP")
 	end
 	
-	doLogin(wsapi_env.REMOTE_ADDR, userid) -- no pcall here!
+	if not pcall(doLogin, wsapi_env.REMOTE_ADDR, userid) then -- if we already have 
+		doLogout(wsapi_env.REMOTE_ADDR)                       -- this ip in activeDB
+		doLogin (wsapi_env.REMOTE_ADDR, userid)
+	end
 	
 	fwwrt.util.logger("LOG_INFO", "User '"..request.POST.username.."' logged in on '"..wsapi_env.REMOTE_ADDR.."'")
 
@@ -251,8 +254,8 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 	local process = function ()
 		yieldSleep()
 		coroutine.yield(template:run(env))
-		coroutine.yield("<pre>"..fwwrt.util.printTable(wsapi_env, "rwsapi_env", ".", 10).."</pre>")
-		coroutine.yield("<pre>"..fwwrt.util.printTable(request,   "request",    ".", 10).."</pre>")
+--		coroutine.yield("<pre>"..fwwrt.util.printTable(wsapi_env, "rwsapi_env", ".", 10).."</pre>")
+--		coroutine.yield("<pre>"..fwwrt.util.printTable(request,   "request",    ".", 10).."</pre>")
 		end
 		
 	return 200, commonHeaders, coroutine.wrap(process)

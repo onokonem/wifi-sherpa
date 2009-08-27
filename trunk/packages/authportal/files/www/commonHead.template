@@ -1,0 +1,26 @@
+<%--don''t forget to place a title tag on a previos stage template%>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+.card {
+	font-family: Verdana, Arial, Helvetica, sans-serif; 
+	font-size: 8pt; /* Размер шрифта в пунктах */ 
+	}
+.mid
+	{
+	background :#e1e1e1;
+	}
+.user
+	{
+	font-weight: bold;
+	}
+P
+	{
+	font-family: Verdana, Arial, Helvetica, sans-serif; 
+	font-size: 8pt; /* Размер шрифта в пунктах */ 
+	}
+UL
+	{
+	font-family: Verdana, Arial, Helvetica, sans-serif; 
+	font-size: 8pt; /* Размер шрифта в пунктах */ 
+	}
+</style>
