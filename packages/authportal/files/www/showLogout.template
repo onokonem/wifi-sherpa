@@ -18,7 +18,7 @@
        </tr>
 	   <tr>
 		<td ALIGN="right">		
-<!--        <INPUT TYPE="submit" name="logout" VALUE="Отключите меня от интернета!"/></td> -->
+        <INPUT TYPE="submit" name="logout" VALUE="Отключите меня от интернета!"/></td>
 		<p><b>Компания «Седьмой Слон» - проектирование и разработка сетевых решений, <a href="http://www.sslon.info">sslon.info</a></b></p>
        	</td>
 	   </tr>
