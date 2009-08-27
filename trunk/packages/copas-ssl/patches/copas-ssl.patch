@@ -16,7 +16,7 @@ diff -ubBENdr copas-1.1.5.orig/Makefile copas-1.1.5/Makefile
  	mkdir -p $(LUA_DIR)/copas
 diff -ubBENdr copas-1.1.5.orig/src/copas/copas.lua copas-1.1.5/src/copas/copas.lua
 --- copas-1.1.5.orig/src/copas/copas.lua	2009-04-08 02:09:52.000000000 +0400
-+++ copas-1.1.5/src/copas/copas.lua	2009-08-25 18:30:55.000000000 +0400
++++ copas-1.1.5/src/copas/copas.lua	2009-08-26 00:03:27.000000000 +0400
 @@ -16,6 +16,8 @@
  
  require "coxpcall"
@@ -56,17 +56,17 @@ diff -ubBENdr copas-1.1.5.orig/src/copas/copas.lua copas-1.1.5/src/copas/copas.l
 +--
 +local k,v for k,v in pairs(superclient_mt.__index) do superclient_mt_ssl.__index[k] = v end
 +--
-+superclient_mt_ssl.__index.setoption   (self, ...) return true end
-+superclient_mt_ssl.__index.getsockname (self, ...) return self.peeraddr, self.peerport end
-+superclient_mt_ssl.__index.getpeername (self, ...) return self.peername end
++superclient_mt_ssl.__index.setoption   = function(self, ...) return true end
++superclient_mt_ssl.__index.getsockname = function(self, ...) return self.peeraddr, self.peerport end
++superclient_mt_ssl.__index.getpeername = function(self, ...) return self.peername end
 +--
-+superclient_mt_ssl.__index.receive     (self, ...)
++superclient_mt_ssl.__index.receive     = function(self, ...)
 +	local res, err, part = self.socket:receive(...)
 +	err = ((err == "wantread") or (err == "wantwrite")) and "timeout" or err
 +	return res, err, part
 +	end
 +--
-+superclient_mt_ssl.__index.send        (self, ...)
++superclient_mt_ssl.__index.send        = function(self, ...)
 +	local res, err, part = self.socket:send(...)
 +	err = ((err == "wantwrite") or (err == "wantread")) and "timeout" or err
 +	return res, err, part
@@ -83,7 +83,7 @@ diff -ubBENdr copas-1.1.5.orig/src/copas/copas.lua copas-1.1.5/src/copas/copas.l
 +
 +	if(_ssl[input])
 +		then
-+		setmetatable(slp, superclient_mt_ssl)
++		setmetatable(sc, superclient_mt_ssl)
 +
 +		client:setoption("tcp-nodelay", true)
 +		sc.peeraddr, sc.peerport = client:getsockname()
@@ -93,7 +93,7 @@ diff -ubBENdr copas-1.1.5.orig/src/copas/copas.lua copas-1.1.5/src/copas/copas.l
 +		
 +		sc.socket:dohandshake()
 +	else
-+		setmetatable(slp, superclient_mt)
++		setmetatable(sc, superclient_mt)
 +		end
 +	
 +	return sc
