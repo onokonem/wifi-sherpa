@@ -57,12 +57,12 @@ function  callbackHandler   ()
 
 local ssl = {mode        = "server"
             ,protocol    = "sslv23"
-            ,key         = fwwrt.util.uciGet('fwwrt.ssl.certificate', 'string')
-            ,certificate = fwwrt.util.uciGet('fwwrt.ssl.certificate', 'string')
-            ,cafile      = pcall(fwwrt.util.uciGet, 'fwwrt.ssl.cafile', 'string') or nil
             ,verify      = {"none"}
             ,options     = {"all", "no_sslv2"}
-            ,ciphers     = fwwrt.util.uciGet('fwwrt.ssl.ciphers', 'string')
+            ,key         = fwwrt.util.uciGet('fwwrt.ssl.key',         'string')
+            ,certificate = fwwrt.util.uciGet('fwwrt.ssl.certificate', 'string')
+            ,cafile      = fwwrt.util.uciGet('fwwrt.ssl.cafile',      'string')
+            ,ciphers     = fwwrt.util.uciGet('fwwrt.ssl.ciphers',     'string')
             }
  
 local webDir = fwwrt.util.uciGet('httpd.httpd.home', 'string')
