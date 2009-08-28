@@ -4,7 +4,7 @@
 <%!env.dir.."/commonHead.template"%>
  </head>
  <body>
- <FORM ACTION="$actionUrl" METHOD="POST" NAME="AdminLoginForm">
+ <FORM ACTION="<%=env.actionUrl%>" METHOD="POST" NAME="AdminLoginForm">
   <table align="center" WIDTH="70%" HEIGHT="100%">
    <tr ALIGN="left" VALIGN="middle">
     <td>
@@ -16,7 +16,7 @@
 		<INPUT TYPE="hidden" name = "oplogin" value = "true" />
 		<INPUT TYPE="submit" name="login" VALUE="готово"/>
 		</p>
-	    <p/>$reason</p>
+	    <p/><%=env.reason%></p>
     </td>
    </tr>
   </table>

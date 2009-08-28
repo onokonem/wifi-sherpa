@@ -159,24 +159,22 @@ end
 
 function showAdminLogin(wsapi_env, headers)
 	local reason = reason or ""
-	local template  = fwwrt.util.fileToVariable(webDir.."/showAdminLogin.template")
-	local values    = {actionUrl = "https://"..wsapi_env.SERVER_NAME.."/admin"
+	local env    = {actionUrl = "https://"..wsapi_env.SERVER_NAME.."/admin"
 	                  ,reason    = reason}
-	local process = function () coroutine.yield(cosmo.fill(template, values)) end
+	local template = fwwrt.simplelp.loadFile(webDir.."/showAdminLogin.template", {dir = webDir})
+	local process = function () coroutine.yield(template:run(env)) end
 	return 200, headers, coroutine.wrap(process)
 end
 
 function showBasicAdminForm(wsapi_env, operator, reason, message)
 	local reason = reason or ""
 	local message = message or ""
-	local template  = cardGenTempl
 	local values = {
 		pcdiff = 87, actionUrl = "https://"..wsapi_env.SERVER_NAME.."/admin",
 		reason = reason,
 		user = function () return fwwrt.crypt.randomString() end
 		} --, user = fwwrt.crypt.randomString()
-	local process = function () coroutine.yield(cardGen:run(values)) end
-	return 200, makeCookieHeaders(wsapi_env, operator), coroutine.wrap(process)
+	coroutine.yield(cardGen:run(values))
 end
 
 function processBasicAdminForm(wsapi_env) --main, 
@@ -192,7 +190,8 @@ function processBasicAdminForm(wsapi_env) --main,
 		elseif (request.method == 'POST' and request.POST.logout) then
 			return showAdminLogin(wsapi_env, makeNoCookieHeaders())
 		else
-			return showBasicAdminForm(wsapi_env, operator)
+			local callShowBasicAdminForm = function() return showBasicAdminForm(wsapi_env, operator) end
+			return 200, makeCookieHeaders(wsapi_env, operator), coroutine.wrap(callShowBasicAdminForm)
 		end
 	else
 		return showAdminLogin(wsapi_env, commonHeaders)
