@@ -33,8 +33,6 @@
 <input type='submit' name='generate' value='Печать'>
 <% local pc = 0 %>
 <br/>
-<br/>
-<br/>
 <p/><%=env.reason%></p>
 <br/>
 <br/>
