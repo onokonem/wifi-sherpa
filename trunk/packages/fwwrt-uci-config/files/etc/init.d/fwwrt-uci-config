@@ -28,8 +28,9 @@ config 'fwwrt' 'ports'
     option 'ssh'       '4778'
 
 config 'fwwrt' 'ssl'
-    option 'certificate' '/etc/certs/hot.spot.pem'
-    option 'cafile_disabled'   '/etc/certs/CA.pem'
+    option 'certificate' '/etc/certs/hotspot.djarvur.net.crt'
+    option 'key'         '/etc/certs/hotspot.djarvur.net.key'
+    option 'cafile'      '/etc/certs/startssl.com.sub.class1.server.ca.pem'
     option 'ciphers'     'ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL'
 
 config 'fwwrt' 'firewall'
@@ -47,7 +48,7 @@ config 'fwwrt' 'log'
 
 config 'fwwrt' 'authportal'
     option 'logindelay'      '2'
-    option 'httpsName'       'hot.spot'
+    option 'httpsName'       'hotspot.djarvur.net'
     option 'dbType'          'sqlite2'
     option 'dbFile'          '/usr/local/fwwrt/authportal.sqlite2'
 
@@ -57,11 +58,29 @@ config 'fwwrt' 'show'
     option 'adminlink'   'true'
 EOF
 
-		uci commit
-		}
+		  uci commit
+
+          uci import wireless <<EOF
+config 'wifi-device' 'wl0'
+        option 'type'     'broadcom'
+        option 'channel'  '5'
+        option 'disabled' '0'
+
+config 'wifi-iface'
+        option 'device'     'wl0'
+        option 'network'    'lan'
+        option 'mode'       'ap'
+        option 'encryption' 'none'
+        option 'ssid'       '`uci get fwwrt.authportal.httpsName`'
+EOF
+
+		  uci commit
+		  }
+	
+	uci set system.@system[0].hostname="`uci get fwwrt.authportal.httpsName`"
 	
 	uci set dhcp.lan.leasetime="`uci get fwwrt.dhcp.kickoffTimeout`"
-	
+
 	uciFindAndRemove firewall ".path=`uci get fwwrt.firewall.includepath`"
 	uci add firewall include
 	uci set firewall.@include[-1].path="`uci get fwwrt.firewall.includepath`"
