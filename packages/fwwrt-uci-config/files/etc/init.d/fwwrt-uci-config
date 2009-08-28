@@ -13,11 +13,21 @@ uciFindAndRemove() {
 	}
 
 start() {
-        tmpStr="`uci get fwwrt.ports`"
-
-        test "$tmpStr" == "fwwrt" ||
+        test "`uci get fwwrt.authportal`" == "fwwrt" ||
           {
           uci import fwwrt <<EOF
+config 'fwwrt' 'authportal'
+    option 'logindelay'      '2'
+    option 'httpsName'       'hotspot.djarvur.net'
+    option 'dbType'          'sqlite2'
+    option 'dbFile'          '/usr/local/fwwrt/authportal.sqlite2'
+
+config 'fwwrt' 'ssl'
+    option 'certificate' '/etc/certs/hotspot.djarvur.net.crt'
+    option 'key'         '/etc/certs/hotspot.djarvur.net.key'
+    option 'cafile'      '/etc/certs/startssl.com.sub.class1.server.ca.pem'
+    option 'ciphers'     'ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL'
+
 config 'fwwrt' 'ports'
     option 'unauth'    '3001'
     option 'unauthSSL' '3002'
@@ -26,12 +36,6 @@ config 'fwwrt' 'ports'
     option 'authSSL'   '3004'
     option 'squid'     '3128'
     option 'ssh'       '4778'
-
-config 'fwwrt' 'ssl'
-    option 'certificate' '/etc/certs/hotspot.djarvur.net.crt'
-    option 'key'         '/etc/certs/hotspot.djarvur.net.key'
-    option 'cafile'      '/etc/certs/startssl.com.sub.class1.server.ca.pem'
-    option 'ciphers'     'ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL'
 
 config 'fwwrt' 'firewall'
     option 'externalAdmin'   'YES'
@@ -45,12 +49,6 @@ config 'fwwrt' 'dhcp'
 
 config 'fwwrt' 'log'
     option 'verbose'         'false'
-
-config 'fwwrt' 'authportal'
-    option 'logindelay'      '2'
-    option 'httpsName'       'hotspot.djarvur.net'
-    option 'dbType'          'sqlite2'
-    option 'dbFile'          '/usr/local/fwwrt/authportal.sqlite2'
 
 config 'fwwrt' 'show'
     option 'logout'      'true'
