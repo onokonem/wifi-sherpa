@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # OpenWrt version: Kamikaze (r17264)
-# Fri Aug 21 20:23:12 2009
+# Thu Aug 27 14:23:46 2009
 #
 CONFIG_HAVE_DOT_CONFIG=y
 # CONFIG_TARGET_ppc40x is not set
@@ -1824,7 +1824,6 @@ CONFIG_PACKAGE_fwwrt-uci-config=y
 CONFIG_PACKAGE_libusb1=y
 CONFIG_PACKAGE_madwimax=y
 CONFIG_PACKAGE_usbboot-ohci=y
-CONFIG_PACKAGE_wimaxwan=y
 
 #
 # Administration
