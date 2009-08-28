@@ -16,7 +16,7 @@ diff -ubBENdr copas-1.1.5.orig/Makefile copas-1.1.5/Makefile
  	mkdir -p $(LUA_DIR)/copas
 diff -ubBENdr copas-1.1.5.orig/src/copas/copas.lua copas-1.1.5/src/copas/copas.lua
 --- copas-1.1.5.orig/src/copas/copas.lua	2009-04-08 02:09:52.000000000 +0400
-+++ copas-1.1.5/src/copas/copas.lua	2009-08-26 00:03:27.000000000 +0400
++++ copas-1.1.5/src/copas/copas.lua	2009-08-28 21:39:40.000000000 +0400
 @@ -16,6 +16,8 @@
  
  require "coxpcall"
@@ -34,69 +34,74 @@ diff -ubBENdr copas-1.1.5.orig/src/copas/copas.lua copas-1.1.5/src/copas/copas.l
  local _reading_log = {}
  local _writing_log = {}
  
-@@ -252,14 +255,75 @@
+@@ -252,14 +255,80 @@
         end
  end
  
-+local superclient_mt     = {__index = {}}
-+superclient_mt.__index.setoption   = function(self, ...) return self.socket:setoption(...)   end
-+superclient_mt.__index.getsockname = function(self, ...) return self.socket:getsockname(...) end
-+superclient_mt.__index.getpeername = function(self, ...) return self.socket:getpeername(...) end
-+superclient_mt.__index.settimeout  = function(self, ...) return self.socket:settimeout(...)  end
-+superclient_mt.__index.close       = function(self, ...) return self.socket:close(...)       end
-+superclient_mt.__index.flush       = function(self, ...) return self.socket:flush(...)       end
-+superclient_mt.__index.getfd       = function(self, ...) return self.socket:getfd(...)       end
-+superclient_mt.__index.dirty       = function(self, ...) return self.socket:dirty(...)       end
-+superclient_mt.__index.want        = function(self, ...) return self.socket:want(...)        end
-+superclient_mt.__index.receive     = function(self, ...) return self.socket:receive(...)     end
-+superclient_mt.__index.send        = function(self, ...) return self.socket:send(...)        end
-+
-+
-+local superclient_mt_ssl = {__index = {}}
++local socketWrapper = {
++	 setoption   = function(self, ...) return self.socket:setoption(...)   end
++	,getsockname = function(self, ...) return self.socket:getsockname(...) end
++	,getpeername = function(self, ...) return self.socket:getpeername(...) end
++	,settimeout  = function(self, ...) return self.socket:settimeout(...)  end
++	,close       = function(self, ...) return self.socket:close(...)       end
++	,flush       = function(self, ...) return self.socket:flush(...)       end
++	,getfd       = function(self, ...) return self.socket:getfd(...)       end
++	,dirty       = function(self, ...) return self.socket:dirty(...)       end
++	,want        = function(self, ...) return self.socket:want(...)        end
++	,receive     = function(self, ...) return self.socket:receive(...)     end
++	,send        = function(self, ...) return self.socket:send(...)        end
++	}
 +--
-+local k,v for k,v in pairs(superclient_mt.__index) do superclient_mt_ssl.__index[k] = v end
++local socketWrapperMT = {__index = socketWrapper}
 +--
-+superclient_mt_ssl.__index.setoption   = function(self, ...) return true end
-+superclient_mt_ssl.__index.getsockname = function(self, ...) return self.peeraddr, self.peerport end
-+superclient_mt_ssl.__index.getpeername = function(self, ...) return self.peername end
-+--
-+superclient_mt_ssl.__index.receive     = function(self, ...)
-+	local res, err, part = self.socket:receive(...)
-+	err = ((err == "wantread") or (err == "wantwrite")) and "timeout" or err
-+	return res, err, part
++socketWrapper.new = function(socket, parent)
++	local result = {socket = socket
++	               ,parent = parent
++	               }
++	setmetatable(result, socketWrapperMT)
++	socket:settimeout(0)
++	return result
 +	end
-+--
-+superclient_mt_ssl.__index.send        = function(self, ...)
-+	local res, err, part = self.socket:send(...)
-+	err = ((err == "wantwrite") or (err == "wantread")) and "timeout" or err
-+	return res, err, part
++
++local socketWrapperSsl = {
++	 setoption   = function(self, ...) return true end
++	,getsockname = function(self, ...) return self.peeraddr, self.peerport end
++	,getpeername = function(self, ...) return self.peername end
++	--
++	,receive     = function(self, ...)
++		local res, err, part = self.socket:receive(...)
++		err = ((err == "wantread") or (err == "wantwrite")) and "timeout" or err
++		return res, err, part
++		end
++	--
++	,send        = function(self, ...)
++		local res, err, part = self.socket:send(...)
++		err = ((err == "wantwrite") or (err == "wantread")) and "timeout" or err
++		return res, err, part
++		end
++	}
++
++setmetatable(socketWrapperSsl, socketWrapperMT)
++
++local socketWrapperSslMT = {__index = socketWrapperSsl}
++
++socketWrapperSsl.new = function(socket, parent)
++	local result = socketWrapper.new(socket, parent)
++
++	result:setoption("tcp-nodelay", true)
++	result.peername = result:getpeername()
++	result.peeraddr, result.peerport = result:getsockname()
++
++	result.socket = assert(ssl.wrap(result.socket, _ssl[result.parent]))
++
++	setmetatable(result, socketWrapperSslMT)
++	return result
 +	end
 +
 +function superclient(client, input)
 +	if(not client) then return nil end
 +
-+	client:settimeout(0)
-+
-+	local sc = {parent = input
-+	           ,socket = client
-+	           }
-+
-+	if(_ssl[input])
-+		then
-+		setmetatable(sc, superclient_mt_ssl)
-+
-+		client:setoption("tcp-nodelay", true)
-+		sc.peeraddr, sc.peerport = client:getsockname()
-+		sc.peername = client:getpeername()
-+
-+		sc.socket      = assert(ssl.wrap(client, _ssl[input]))
-+		
-+		sc.socket:dohandshake()
-+	else
-+		setmetatable(sc, superclient_mt)
-+		end
-+	
-+	return sc
++	return _ssl[input] and socketWrapperSsl.new(client, input) or socketWrapper.new(client, input)
 +	end
 +	
  -- accepts a connection on socket input
@@ -112,7 +117,7 @@ diff -ubBENdr copas-1.1.5.orig/src/copas/copas.lua copas-1.1.5/src/copas/copas.l
  	end
  	return client
  end
-@@ -276,9 +340,11 @@
+@@ -276,9 +345,11 @@
  -------------------------------------------------------------------------------
  -- Adds a server/handler pair to Copas dispatcher
  -------------------------------------------------------------------------------
