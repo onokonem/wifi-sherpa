@@ -123,6 +123,7 @@ function connect()
 
 
 function bindAndExecute(statement, ...)
-    assert(statement:bind(...))
-    return assert(statement:execute())
+	assert(statement:bind(...))
+	local result, err = statement:execute()                                                                  
+	return result or error("Error executing statement '"..tostring(statement.binded).."': "..err) 
 	end
