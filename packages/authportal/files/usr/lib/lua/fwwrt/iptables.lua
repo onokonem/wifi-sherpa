@@ -19,6 +19,7 @@ require "fwwrt.authportal"
 local chains = {PREROUTING  = 'nat'
                ,POSTROUTING = 'nat'
                ,FORWARD     = 'filter'
+               ,INPUT       = 'filter'
                }
 
 
