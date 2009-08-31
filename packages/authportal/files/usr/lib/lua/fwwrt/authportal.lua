@@ -31,16 +31,26 @@ local showAdminLink = fwwrt.util.uciGet('fwwrt.show.adminlink',        'boolean'
 local statement = {allActive  = [[SELECT DISTINCT
                                    u.userid          AS userid
                                   ,a.logintime       AS logintime
+                                  ,a.ipaddr          AS ipaddr
+                                  ,a.macaddr         AS macaddr
                                   ,u.totalTimeUsed   AS totalTimeUsed
+                                  ,strftime('%s','now') + t.totalTimeLim - u.totalTimeUsed
+                                                     AS expire
                                   FROM       activeusers AS a
                                   INNER JOIN users       AS u ON (u.userid = a.userid)
+                                  INNER JOIN tarifs      AS t ON (t.tarifid = u.tarifid)
                                 ]]
                   ,oneActive  = [[SELECT DISTINCT
                                    u.userid          AS userid
                                   ,a.logintime       AS logintime
+                                  ,a.ipaddr          AS ipaddr
+                                  ,a.macaddr         AS macaddr
                                   ,u.totalTimeUsed   AS totalTimeUsed
+                                  ,strftime('%s','now') + t.totalTimeLim - u.totalTimeUsed
+                                                     AS expire
                                   FROM       activeusers AS a
                                   INNER JOIN users       AS u ON (u.userid = a.userid)
+                                  INNER JOIN tarifs      AS t ON (t.tarifid = u.tarifid)
                                   WHERE a.ipaddr = ?
                                 ]]
                   ,userById   = [[SELECT DISTINCT
@@ -56,12 +66,14 @@ local statement = {allActive  = [[SELECT DISTINCT
                                   ,t.tarifid         AS tarifid
                                   ,u.totalTrafUsed   AS totalTrafUsed
                                   ,u.sessionTimeUsed AS sessionTimeUsed
+                                  ,strftime('%s','now') + t.totalTimeLim - u.totalTimeUsed
+                                                     AS expire
                                   FROM       users  AS u
                                   INNER JOIN tarifs AS t ON (t.tarifid = u.tarifid)
                                   WHERE u.userid = ?
                                 ]]
                   ,updateUser = "UPDATE users set totalTimeUsed = ? where userid = ?"
-                  ,addActive  = "INSERT INTO activeusers (ipaddr, userid, logintime) VALUES (?,?,?)"
+                  ,addActive  = "INSERT INTO activeusers (ipaddr, macaddr, userid, logintime) VALUES (?,?,?,strftime('%s','now'))"
                   ,delActive  = "DELETE FROM activeusers WHERE userid = ?"
                   ,userByName = [[SELECT DISTINCT
                                    u.userid          AS userid
@@ -76,6 +88,8 @@ local statement = {allActive  = [[SELECT DISTINCT
                                   ,t.tarifid         AS tarifid
                                   ,u.totalTrafUsed   AS totalTrafUsed
                                   ,u.sessionTimeUsed AS sessionTimeUsed
+                                  ,strftime('%s','now') + t.totalTimeLim - u.totalTimeUsed
+                                                     AS expire
                                   FROM       users  AS u
                                   INNER JOIN tarifs AS t ON (t.tarifid = u.tarifid)
                                   WHERE u.username = ?
@@ -117,41 +131,47 @@ end
 
 function processLogoutForm(wsapi_env) --showlogin
 	local request  = wsapi.request.new(wsapi_env)
-	fwwrt.iptkeeper.logIpOut(wsapi_env.REMOTE_ADDR)
+	doLogout(wsapi_env.REMOTE_ADDR, "user request")
 	return showLoginForm(wsapi_env, "http://"..hostname.."/", "logged out successfully")
 end
 
-function doLogout(ip)
+function doLogout(ip, reason)
 	local userCur
 	local userRow
 	local cur = fwwrt.dbBackend.bindAndExecute(statement.oneActive, {'TEXT', ip})
 	local row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
 	cur:close()
 	doLogoutId(row)
+	fwwrt.util.logger("LOG_INFO", "Logout '"..wsapi_env.REMOTE_ADDR.."': "..reason)
 end
 
 function doLogoutId(row)
 	local reset    = fwwrt.dbBackend.bindAndExecute(statement.updateUser 
-		--,updateUser = "UPDATE users totalTimeUsed = ? where userid = ?"
 		                                  ,{'INTEGER' ,os.time() - row.logintime + row.totalTimeUsed}
 		                                  ,{'INTEGER' ,row.userid}
 		                                   )
 	local activesCur = fwwrt.dbBackend.bindAndExecute(statement.delActive
-	--	  ,delActive  = "DELETE FROM activeusers WHERE userid = ?"	
 	                                          ,{'INTEGER'    ,row.userid}
 	                                          )
 end
 
-function doLogoutAll()
+function getActiveUsers()
+    local result = {}
 	local cur = fwwrt.dbBackend.bindAndExecute(statement.allActive)
 	local row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
-	cur:close()
 	while row do
-		doLogoutId(row)
-		cur = fwwrt.dbBackend.bindAndExecute(statement.allActive)
+		result[row.ipaddr] = row
 		row = cur:fetch (row, "a")	-- reusing the table of results
-		cur:close()
 	end
+	cur:close()
+end
+
+function doLogoutAll()
+    local activeUsers = getActiveUsers()
+    local ipaddr, info
+    for ipaddr, info in pairs(activeUsers) do
+    	doLogoutId(row)(info)
+    	end
 end
 
 function doLogin(ip, userid)
@@ -193,7 +213,7 @@ function checkLogin(user)
 	local info = cur:fetch({}, "a")
 	cur:close()
 --	print("db, userid = "..tostring(info.userid))
-	if info then return true, info.userid, info.totalTimeUsed, info.totalTimeLim end
+	if info then return true, info.userid, info.totalTimeUsed, info.totalTimeLim info.expire end
 	return nil
 end
 
@@ -210,15 +230,12 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 	if request.POST.logout then return processLogoutForm(wsapi_env) end
 
 --    local authorized, userid, totalTimeUsed, totalTimeLim = pcall(checkLogin, request.POST.username)
-    local authorized, userid, totalTimeUsed, totalTimeLim = checkLogin(request.POST.username)
-	print("userid = "..tostring(userid) )
+    local authorized, userid, totalTimeUsed, totalTimeLim, expire = checkLogin(request.POST.username)
 
     if (not authorized) then
 		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..tostring(userid))
 		return showLoginForm(wsapi_env, request.POST.origUrl, "code incorrect: '"..request.POST.username.."'")
 	end --                  (wsapi_env, oriurl, reason, message)
-	
-	local expire = os.time() + totalTimeLim - totalTimeUsed
 	
 	if expire <= 0 then
 		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..userid.." – expired")
@@ -230,18 +247,23 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 	fwwrt.util.logger("LOG_DEBUG",request.POST.username .." expires on "..os.date(t, expire)..
 		" logged in on "..os.date())
 	
-    if (not fwwrt.iptkeeper.logIpIn(wsapi_env.REMOTE_ADDR, expire))
+	local macaddr = fwwrt.iptkeeper.getMac(wsapi_env.REMOTE_ADDR)
+    if (not macaddr)
     	then
 		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': address unknown")
 		return showLoginForm(wsapi_env, request.POST.origUrl, "unknownIP")
 	end
 	
-	if not pcall(doLogin, wsapi_env.REMOTE_ADDR, userid) then -- if we already have 
-		doLogout(wsapi_env.REMOTE_ADDR)                       -- this ip in activeDB
-		doLogin (wsapi_env.REMOTE_ADDR, userid)
+	if not pcall(doLogin, wsapi_env.REMOTE_ADDR, macaddr, userid) then -- if we already have 
+		doLogout(wsapi_env.REMOTE_ADDR)                            -- this ip in activeDB
+		doLogin (wsapi_env.REMOTE_ADDR, macaddr, userid)
 	end
 	
-	fwwrt.util.logger("LOG_INFO", "User '"..request.POST.username.."' logged in on '"..wsapi_env.REMOTE_ADDR.."'")
+	fwwrt.util.logger("LOG_INFO", "Login '"..request.POST.username
+	                  .."' on IP '"..wsapi_env.REMOTE_ADDR
+	                  .."', MAC '"..macaddr
+	                  .."' till "..os.date("%Y%m%d-%H:%M:%S", expire)
+	                 )
 
 	local values = {actionUrl = "https://"..hostname.."/", dir = webDir}
 	local template = fwwrt.simplelp.loadFile(webDir.."/showLogout.template", values)
