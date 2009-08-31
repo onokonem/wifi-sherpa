@@ -22,6 +22,7 @@ externalIface="`  uci get network.wan.ifname`"           || exit 1
 externalAdmin="`  getBool fwwrt.firewall.externalAdmin`" || exit 1
 squidEnabled="`   getBool fwwrt.firewall.squidEnabled`"  || exit 1
 fixMTU="`         getParam fwwrt.firewall.fixMTU`"       || exit 1
+upnpOn="`         getBool fwwrt.firewall.upnpEnabled`"   || exit 1
 unauthHttpPort="` uci get fwwrt.ports.unauth`"           || exit 1
 unauthHttpsPort="`uci get fwwrt.ports.unauthSSL`"        || exit 1
 unauthDnsPort="`  uci get fwwrt.ports.unauthDNS`"        || exit 1
@@ -32,8 +33,14 @@ sshPort="`        uci get fwwrt.ports.ssh`"              || exit 1
 verbose="`        getBool fwwrt.log.verbose`"            || exit 1
 IPTABLES="`       uci get fwwrt.firewall.iptables`"      || exit 1
 
+upnpTcp=5000
+upnpUdp=1900
+
 
 test "$fixMTU" -gt 0 && {
+# This is dirty fix, just because OpenWRT does not clean mangle table
+$IPTABLES -t mangle -F FORWARD
+##############################
 test "$verbose" == "true" &&
 $IPTABLES -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j LOG --log-level debug --log-prefix 'fixMTU '
 $IPTABLES -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss "$fixMTU"
@@ -115,6 +122,8 @@ $IPTABLES -A FORWARD_cleanup -j DROP
 $IPTABLES -t nat    -N checkauth_PREROUTING
 $IPTABLES -t nat    -I prerouting_rule  -s "$addrRange" -j unauthorized_PREROUTING
 $IPTABLES -t nat    -I prerouting_rule                  -j checkauth_PREROUTING
+test "$upnpOn" == "true" &&
+$IPTABLES -t nat    -I prerouting_rule                  -j miniupnpd_wan_rule
 #
 $IPTABLES -t nat    -N checkauth_POSTROUTING
 $IPTABLES -t nat    -I postrouting_rule -j checkauth_POSTROUTING
@@ -122,37 +131,50 @@ $IPTABLES -t nat    -I postrouting_rule -j checkauth_POSTROUTING
 $IPTABLES -t filter -N checkauth_FORWARD
 $IPTABLES -t filter -I forwarding_rule -j FORWARD_cleanup
 $IPTABLES -t filter -I forwarding_rule -j checkauth_FORWARD
+test "$upnpOn" == "true" &&
+$IPTABLES -t filter -I forwarding_rule -j miniupnpd_wan_rule
 
 
 $IPTABLES -N unauthorized_INPUT_local
 test "$verbose" == "true" &&
-$IPTABLES -A unauthorized_INPUT_local -j LOG --log-level debug --log-prefix 'unauthorized_INPUT_local '
+$IPTABLES -t filter -A unauthorized_INPUT_local -j LOG --log-level debug --log-prefix 'unauthorized_INPUT_local '
 #
-$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$unauthHttpPort"  -m state --state NEW  -j ACCEPT 
-$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$unauthHttpsPort" -m state --state NEW  -j ACCEPT
-$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$authHttpsPort"   -m state --state NEW  -j ACCEPT 
-$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$authHttpPort"    -m state --state NEW  -j ACCEPT 
-$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$squidPort"       -m state --state NEW  -j ACCEPT 
-$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport                 22 -m state --state NEW  -j ACCEPT 
-$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport                 53 -m state --state NEW  -j ACCEPT 
-$IPTABLES -A unauthorized_INPUT_local -p udp -m udp  --dport                 53 -m state --state NEW  -j ACCEPT 
-#$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$unauthDnsPort"   -m state --state NEW  -j ACCEPT 
-#$IPTABLES -A unauthorized_INPUT_local -p udp -m udp  --dport "$unauthDnsPort"   -m state --state NEW  -j ACCEPT 
-$IPTABLES -A unauthorized_INPUT_local -p udp -m udp  --dport                123 -m state --state NEW  -j ACCEPT 
-#$IPTABLES -A unauthorized_INPUT_local -p tcp -m tcp  --dport                 23 -m state --state NEW  -j ACCEPT 
+$IPTABLES -t filter -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$unauthHttpPort"  -m state --state NEW  -j ACCEPT 
+$IPTABLES -t filter -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$unauthHttpsPort" -m state --state NEW  -j ACCEPT
+$IPTABLES -t filter -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$authHttpsPort"   -m state --state NEW  -j ACCEPT 
+$IPTABLES -t filter -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$authHttpPort"    -m state --state NEW  -j ACCEPT 
+$IPTABLES -t filter -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$squidPort"       -m state --state NEW  -j ACCEPT 
+$IPTABLES -t filter -A unauthorized_INPUT_local -p tcp -m tcp  --dport                 22 -m state --state NEW  -j ACCEPT 
+$IPTABLES -t filter -A unauthorized_INPUT_local -p tcp -m tcp  --dport                 53 -m state --state NEW  -j ACCEPT 
+$IPTABLES -t filter -A unauthorized_INPUT_local -p udp -m udp  --dport                 53 -m state --state NEW  -j ACCEPT 
+#$IPTABLES -t filter -A unauthorized_INPUT_local -p tcp -m tcp  --dport "$unauthDnsPort"   -m state --state NEW  -j ACCEPT 
+#$IPTABLES -t filter -A unauthorized_INPUT_local -p udp -m udp  --dport "$unauthDnsPort"   -m state --state NEW  -j ACCEPT 
+$IPTABLES -t filter -A unauthorized_INPUT_local -p udp -m udp  --dport                123 -m state --state NEW  -j ACCEPT 
+#$IPTABLES -t filter -A unauthorized_INPUT_local -p tcp -m tcp  --dport                 23 -m state --state NEW  -j ACCEPT 
 #
 #
 $IPTABLES -t filter -N unauthorized_INPUT
 test "$verbose" == "true" &&
 $IPTABLES -t filter -A unauthorized_INPUT -j LOG --log-level debug --log-prefix 'unauthorized_INPUT '
 #
-$IPTABLES -A unauthorized_INPUT -p udp -m udp --sport 68 --dport 67 -i "$internalIface"         -j ACCEPT 
-$IPTABLES -A unauthorized_INPUT -p tcp -m tcp            --dport 22       -m state --state NEW  -j ACCEPT
+$IPTABLES -t filter -A unauthorized_INPUT -p udp -m udp --sport 68 --dport 67 -i "$internalIface"         -j ACCEPT 
+$IPTABLES -t filter -A unauthorized_INPUT -p tcp -m tcp            --dport 22       -m state --state NEW  -j ACCEPT
 #
 test "$externalAdmin" == "true" &&     
 $IPTABLES -A unauthorized_INPUT -p tcp -m tcp --dport  "$unauthHttpsPort" -m state --state NEW  -j ACCEPT
 #
 #
+$IPTABLES -t filter -N authorized_INPUT
+test "$verbose" == "true" &&
+$IPTABLES -t filter -A authorized_INPUT -j LOG --log-level debug --log-prefix 'authorized_INPUT '
+#
+test "$upnpOn" == "true" && {
+$IPTABLES -t filter -A authorized_INPUT -p tcp -m tcp --dport "$upnpTcp" -m state --state NEW  -j ACCEPT
+$IPTABLES -t filter -A authorized_INPUT -p udp -m udp --dport "$upnpUdp" -m state --state NEW  -j ACCEPT
+}
+#
+#
+$IPTABLES -t filter -N checkauth_INPUT
 
 $IPTABLES -t filter -N INPUT_cleanup
 test "$verbose" == "true" &&
@@ -162,4 +184,5 @@ $IPTABLES -A INPUT_cleanup -j DROP
 $IPTABLES -t filter -I input_rule                 -j INPUT_cleanup
 $IPTABLES -t filter -I input_rule                 -j unauthorized_INPUT
 $IPTABLES -t filter -I input_rule -s "$addrRange" -j unauthorized_INPUT_local
+$IPTABLES -t filter -I input_rule                 -j checkauth_INPUT
 

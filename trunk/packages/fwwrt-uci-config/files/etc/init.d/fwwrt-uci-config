@@ -19,6 +19,7 @@ start() {
 config 'fwwrt' 'authportal'
     option 'logindelay'      '2'
     option 'httpsName'       'hotspot.djarvur.net'
+    option 'shortName'       'hot.spot'
     option 'dbType'          'sqlite2'
     option 'dbFile'          '/usr/local/fwwrt/authportal.sqlite2'
 
@@ -43,6 +44,7 @@ config 'fwwrt' 'firewall'
     option 'iptables'        '/usr/sbin/iptables'
     option 'includepath'     '/etc/firewall.fwwrt'
     option 'fixMTU'          '1350'
+    option 'upnpEnabled'     'yes'
 
 config 'fwwrt' 'dhcp'
     option 'kickoffTimeout'  '5m'
@@ -86,6 +88,11 @@ EOF
 	uciFindAndRemove luci_hosts ".hostname=`uci get fwwrt.authportal.httpsName`"
 	uci add luci_hosts host
 	uci set luci_hosts.@host[-1].hostname="`uci get fwwrt.authportal.httpsName`"
+	uci set luci_hosts.@host[-1].ipaddr="`uci get network.lan.ipaddr`"
+
+	uciFindAndRemove luci_hosts ".hostname=`uci get fwwrt.authportal.shortName`"
+	uci add luci_hosts host
+	uci set luci_hosts.@host[-1].hostname="`uci get fwwrt.authportal.shortName`"
 	uci set luci_hosts.@host[-1].ipaddr="`uci get network.lan.ipaddr`"
 
 	uci commit
