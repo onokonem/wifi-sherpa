@@ -135,14 +135,13 @@ function processLogoutForm(wsapi_env) --showlogin
 	return showLoginForm(wsapi_env, "http://"..hostname.."/", "logged out successfully")
 end
 
-function doLogout(ip, reason)
-	local userCur
-	local userRow
-	local cur = fwwrt.dbBackend.bindAndExecute(statement.oneActive, {'TEXT', ip})
+function doLogout(ipaddr, reason)
+	local cur = fwwrt.dbBackend.bindAndExecute(statement.oneActive, {'TEXT', ipaddr})
 	local row = cur:fetch ({}, "a")	-- the rows will be indexed by field names
 	cur:close()
+	if (not row) then return end
 	doLogoutId(row)
-	fwwrt.util.logger("LOG_INFO", "Logout '"..wsapi_env.REMOTE_ADDR.."': "..reason)
+	fwwrt.util.logger("LOG_INFO", "Logout '"..ipaddr.."': "..reason)
 end
 
 function doLogoutId(row)
@@ -164,21 +163,22 @@ function getActiveUsers()
 		row = cur:fetch (row, "a")	-- reusing the table of results
 	end
 	cur:close()
+	return result
 end
 
 function doLogoutAll()
     local activeUsers = getActiveUsers()
     local ipaddr, info
     for ipaddr, info in pairs(activeUsers) do
-    	doLogoutId(row)(info)
+    	doLogoutId(info)
     	end
 end
 
-function doLogin(ip, userid)
+function doLogin(ipaddr, macaddr, userid)
 	local cur = fwwrt.dbBackend.bindAndExecute(statement.addActive -- and no assert here!
-	                                          ,{'TEXT'    ,ip}
+	                                          ,{'TEXT'    ,ipaddr}
+	                                          ,{'TEXT'    ,macaddr}
 	                                          ,{'INTEGER' ,userid}
-	                                          ,{'INTEGER' ,os.time()}
 	                                          )
 	return (cur == 1)
 end
@@ -213,8 +213,8 @@ function checkLogin(user)
 	local info = cur:fetch({}, "a")
 	cur:close()
 --	print("db, userid = "..tostring(info.userid))
-	if info then return true, info.userid, info.totalTimeUsed, info.totalTimeLim info.expire end
-	return nil
+    if not info then return nil end
+	return true, tonumber(info.userid), tonumber(info.totalTimeUsed), tonumber(info.totalTimeLim), tonumber(info.expire)
 end
 
 function processLoginForm(wsapi_env) --doLogin, show logout

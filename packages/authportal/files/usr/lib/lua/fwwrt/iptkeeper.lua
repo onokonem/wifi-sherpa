@@ -21,8 +21,8 @@ local leasesFileName  = fwwrt.util.uciGet('dhcp.dnsmasq.leasefile', 'string')
 
 local leases               = {}
 
-function getMac(ip)
-	return leases[ip] and leases[ip].mac
+function getMac(ipaddr)
+	return leases[ipaddr] and leases[ipaddr].macaddr
 	end
 
 function readLeases (leasesFileName, curTime)
@@ -34,12 +34,12 @@ function readLeases (leasesFileName, curTime)
 		local line = nil
 		for line in reader:lines()
 			do
-			local _, _, expire, mac, ip = string.find(line, "^(%d+)%s+(%S+)%s+(%S+)%s+%S+%s+%S+%s*$")
+			local _, _, expire, macaddr, ipaddr = string.find(line, "^(%d+)%s+(%S+)%s+(%S+)%s+%S+%s+%S+%s*$")
 			expire=expire + 0
 			if ((expire ~= nil) and (expire > curTime))
 				then
-				fwwrt.util.logger("LOG_DEBUG", "DHCP record '"..ip..", '"..mac.."', "..os.date("%Y%m%d-%H:%M:%S", expire))
-				leases[ip] = {expire = expire, mac = mac}
+				fwwrt.util.logger("LOG_DEBUG", "DHCP record '"..ipaddr..", '"..macaddr.."', "..os.date("%Y%m%d-%H:%M:%S", expire))
+				leases[ipaddr] = {expire = expire, macaddr = macaddr}
 				end
 			end
 
@@ -50,42 +50,23 @@ function readLeases (leasesFileName, curTime)
 	return leases
 	end
 
-function loggedInCleanup (loggedIn, leases, curTime)
-    local loggedIn = fwwrt.authportal.getActiveUsers()
-	local ip, info
-	for ip, info in pairs(loggedIn)
-		do
-		if (not (leases[ip] and leases[ip].expire > curTime))
-			then
-			fwwrt.authportal.doLogout(ip, "not renewed")
-		elseif (info.mac ~= leases[ip].mac)
-			then
-			fwwrt.authportal.doLogout(ip, "MAC changed")
-		elseif (info.expire < curTime)
-			then
-			fwwrt.authportal.doLogout(ip, "expired")
-			end
-		end
-	end
-
-
 function updateAccess()
 	local curTime = os.time()
 
 	leases   = readLeases(leasesFileName, curTime)
 
-	local ip, info
-	for ip, info in pairs(fwwrt.authportal.getActiveUsers())
+	local ipaddr, info
+	for ipaddr, info in pairs(fwwrt.authportal.getActiveUsers())
 		do
-		if (not (leases[ip] and leases[ip].expire > curTime))
+		if (not (leases[ipaddr] and leases[ipaddr].expire > curTime))
 			then
-			fwwrt.authportal.doLogout(ip, "not renewed")
-		elseif (info.mac ~= leases[ip].mac)
+			fwwrt.authportal.doLogout(ipaddr, "not renewed")
+		elseif (info.macaddr ~= leases[ipaddr].macaddr)
 			then
-			fwwrt.authportal.doLogout(ip, "MAC changed")
-		elseif (info.expire < curTime)
+			fwwrt.authportal.doLogout(ipaddr, "MAC changed from "..tostring(info.macaddr).." to "..leases[ipaddr].macaddr)
+		elseif (tonumber(info.expire) < curTime)
 			then
-			fwwrt.authportal.doLogout(ip, "expired")
+			fwwrt.authportal.doLogout(ipaddr, "expired")
 			end
 		end
 
