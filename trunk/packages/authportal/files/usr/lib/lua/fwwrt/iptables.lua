@@ -33,14 +33,14 @@ local listChainTemplate = iptablesPath.." -t %s -L %s -n"
 local parseChain        = "^%s*%S+%s+%S+%s+%S+%s+(%d+%.%d+%.%d+%.%d+)%s+%S+%s*$"
 
 local rulePrefix = "%s -t %s -%s checkauth_%s -s %s -j %s 2>&1"
-local workRule   = string.format(iptablesPath, '%s', '%s', '%s', '%s', 'authorized_%s')
-local logRule    = string.format(iptablesPath, '%s', '%s', '%s', '%s', "LOG --log-level debug --log-prefix 'checkauth_%s '")
+local workRule   = string.format(rulePrefix, iptablesPath, '%s', '%s', '%s', '%s', 'authorized_%s')
+local logRule    = string.format(rulePrefix, iptablesPath, '%s', '%s', '%s', '%s', "LOG --log-level debug --log-prefix 'checkauth_%s '")
 
 
 local function os_execute(cmd, logErr)
     logErr = logErr or 'LOG_ERR'
 	local reader, err = io.popen(cmd, 'r')
-	if (reader ~= nil)
+	if (reader ~= nil) then
 		local result = reader:read("*all")
 		reader:close()
 		if (string.len(result) > 0)
@@ -86,7 +86,7 @@ local function listSrcIps(tableName, chainName)
 
 function syncChains(ipList)
     local tableName, chainName
-    for chainName, tableName in pairs(chains)
+    for chainName, tableName in pairs(chains) do
 		curList = listSrcIps(tableName, 'checkauth_'..chainName)
 		local ip, val
 		for ip, val in pairs(curList) do
