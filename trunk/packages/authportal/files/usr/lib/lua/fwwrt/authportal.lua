@@ -116,10 +116,6 @@ function redirectHeaders(path)
 	       }
 end
 
-function yieldSleep()
-	fwwrt.util.yieldSleep(loginDelay, "")
-end
-
 function showLogoutForm(wsapi_env) --showlogin
 	local values = {actionUrl = "http://"..hostname.."/logout"
 	               ,origUrl   = "http://"..hostname.."/"
@@ -183,7 +179,7 @@ function doLogin(ipaddr, macaddr, userid)
 	return (cur == 1)
 end
 
-function showLoginForm(wsapi_env, oriurl, reason, message) --showlogin
+function showLoginForm(wsapi_env, oriurl, reason, message, delay) --showlogin
 	local reason = reason or ""
 	local loginText = ""
 	local wrong     = ""
@@ -201,7 +197,11 @@ function showLoginForm(wsapi_env, oriurl, reason, message) --showlogin
 	}
 	local template = fwwrt.simplelp.loadFile(webDir.."/showLogin.template", values)
 
-	local process = function () coroutine.yield(template:run(env)) end
+	local process = function ()
+		if delay then fwwrt.util.yieldSleep(loginDelay, "") end
+		coroutine.yield(template:run(env))
+		end
+
 	return 200, commonHeaders, coroutine.wrap(process)
 end
 
@@ -223,7 +223,7 @@ function processLoginForm(wsapi_env) --doLogin, show logout
     if (not (request.POST and ((request.POST.username and request.POST.password and request.POST.origUrl) or request.POST.logout))) -- oh my...
 		then --hacking?
 		fwwrt.util.logger("LOG_ERR", "Bad request from '"..wsapi_env.REMOTE_ADDR.."': not a proper POST")
-		coroutine.wrap(yieldSleep)
+		-- coroutine.wrap(yieldSleep)
 		return showLoginForm(wsapi_env, hostname, "bad request", "not a proper post request")
     end
 
@@ -234,8 +234,8 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 
     if (not authorized) then
 		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..tostring(userid))
-		return showLoginForm(wsapi_env, request.POST.origUrl, "code incorrect: '"..request.POST.username.."'")
-	end --                  (wsapi_env, oriurl, reason, message)
+		return showLoginForm(wsapi_env, request.POST.origUrl, "code incorrect: '"..request.POST.username.."'", true)
+	end --                  (wsapi_env, oriurl, reason, message, delay)
 	
 	if expire <= 0 then
 		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..userid.." – expired")
@@ -274,7 +274,7 @@ function processLoginForm(wsapi_env) --doLogin, show logout
 --		expire = expire
 		}
 	local process = function ()
-		yieldSleep()
+		fwwrt.util.yieldSleep(loginDelay, "")
 		coroutine.yield(template:run(env))
 --		coroutine.yield("<pre>"..fwwrt.util.printTable(wsapi_env, "rwsapi_env", ".", 10).."</pre>")
 --		coroutine.yield("<pre>"..fwwrt.util.printTable(request,   "request",    ".", 10).."</pre>")
