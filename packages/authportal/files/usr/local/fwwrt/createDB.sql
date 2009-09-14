@@ -23,7 +23,8 @@ create table users(
 create table activeusers(
     ipaddr char unique,
     userid integer,
-    logintime integer
+    logintime integer,
+    macaddr char(17)
     );
 
 -- create unique index on activeusers (ipaddr);
@@ -48,8 +49,9 @@ create table userinfo(
 create table tarifinfo(
     tarifid integer,
     tarifdesription varchar
--- CONSTRAINT fk_foo_id REFERENCES a(id) ON DELETE CASCADE http://justatheory.com/computers/databases/sqlite/foreign_key_triggers.html
     );
+-- CONSTRAINT fk_foo_id REFERENCES a(id) ON DELETE CASCADE http://justatheory.com/computers/databases/sqlite/foreign_key_triggers.html
+
     
 create table operators(
     opid integer primary key,
