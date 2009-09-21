@@ -116,8 +116,8 @@ function redirectHeaders(path)
 	       }
 end
 
-function showLogoutForm(wsapi_env) --showlogin
-	local values = {actionUrl = "http://"..hostname.."/logout"
+function showLogoutForm_NOT_USED_ANY_MORE(wsapi_env) --showlogin
+	local values = {actionUrl = "http://"..hostname.."/" -- logout"
 	               ,origUrl   = "http://"..hostname.."/"
 	               }
 	local template  = fwwrt.simplelp.loadFile(webDir.."/showLogout.template", values)
@@ -127,6 +127,7 @@ end
 
 function processLogoutForm(wsapi_env) --showlogin
 	local request  = wsapi.request.new(wsapi_env)
+	print("got post.logout")
 	doLogout(wsapi_env.REMOTE_ADDR, "user request")
 	return showLoginForm(wsapi_env, "http://"..hostname.."/", "logged out successfully")
 end
@@ -217,54 +218,67 @@ function checkLogin(user)
 	return true, tonumber(info.userid), tonumber(info.totalTimeUsed), tonumber(info.totalTimeLim), tonumber(info.expire)
 end
 
-function processLoginForm(wsapi_env) --doLogin, show logout
+function processLoginForm(wsapi_env) --doLogin, show logout. PS: process everything...
 	local request  = wsapi.request.new(wsapi_env)
 
-    if (not (request.POST and ((request.POST.username and request.POST.password and request.POST.origUrl) or request.POST.logout))) -- oh my...
-		then --hacking?
-		fwwrt.util.logger("LOG_ERR", "Bad request from '"..wsapi_env.REMOTE_ADDR.."': not a proper POST")
-		-- coroutine.wrap(yieldSleep)
-		return showLoginForm(wsapi_env, hostname, "bad request", "not a proper post request")
-    end
+--    if ((request.POST ~= "") and not ((request.POST.username and request.POST.password and request.POST.origUrl) or request.POST.logout)) -- oh my...
+--		then --hacking?
+--		print(tostring("post: ", request.POST))
+--		fwwrt.util.logger("LOG_ERR", "Bad request from '"..wsapi_env.REMOTE_ADDR.."': not a proper POST")
+--		-- coroutine.wrap(yieldSleep)
+--		return showLoginForm(wsapi_env, hostname, "bad request", "not a proper post request")
+--		end
 
-	if request.POST.logout then return processLogoutForm(wsapi_env) end
+--	if (not (request.POST.username and request.POST.password and request.POST.origUrl or request.POST.logout))
+	
+
+	if (request.POST.logout) then 
+		print("processLoginForm, got request.POST.logout")
+		return processLogoutForm(wsapi_env) 
+	end
 
 --    local authorized, userid, totalTimeUsed, totalTimeLim = pcall(checkLogin, request.POST.username)
-    local authorized, userid, totalTimeUsed, totalTimeLim, expire = checkLogin(request.POST.username)
-
-    if (not authorized) then
-		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..tostring(userid))
-		return showLoginForm(wsapi_env, request.POST.origUrl, "code incorrect: '"..request.POST.username.."'", true)
-	end --                  (wsapi_env, oriurl, reason, message, delay)
-	
-	if expire <= 0 then
-		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': "..userid.." – expired")
-		return showLoginForm(wsapi_env, request.POST.origUrl, "expired", userid)
+	if (request.POST.username and request.POST.password and request.POST.origUrl)
+		then
+		local authorized, userid, totalTimeUsed, totalTimeLim, expire = checkLogin(request.POST.username)
+		
+		if (not authorized) then
+			fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..
+								wsapi_env.REMOTE_ADDR.."': "..tostring(userid))
+			return showLoginForm(wsapi_env, request.POST.origUrl, "code incorrect: '"..request.POST.username.."'", true)
+		end --                  (wsapi_env, oriurl, reason, message, delay)
+		
+		if expire <= 0 then
+			fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..
+								wsapi_env.REMOTE_ADDR.."': "..userid.." – expired")
+			return showLoginForm(wsapi_env, request.POST.origUrl, "expired", userid)
+		end
+		
+		fwwrt.util.logger("LOG_DEBUG","limit = '"..totalTimeLim.."' used = '"..totalTimeUsed..
+							"' lim - used = '"..totalTimeLim-totalTimeUsed.."'")
+		fwwrt.util.logger("LOG_DEBUG",request.POST.username .." expires on "..os.date(t, expire)..
+							" logged in on "..os.date())
+		
+		local macaddr = fwwrt.iptkeeper.getMac(wsapi_env.REMOTE_ADDR)
+		if (not macaddr)
+		then
+			fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..
+								wsapi_env.REMOTE_ADDR.."': address unknown")
+			return showLoginForm(wsapi_env, request.POST.origUrl, "unknownIP")
+		end
+		
+		if not pcall(doLogin, wsapi_env.REMOTE_ADDR, macaddr, userid) then -- if we already have 
+			doLogout(wsapi_env.REMOTE_ADDR)                            -- this ip in activeDB
+			doLogin (wsapi_env.REMOTE_ADDR, macaddr, userid)
+		end
+		
+		fwwrt.util.logger("LOG_INFO", "Login '"..request.POST.username
+		                  .."' on IP '"..wsapi_env.REMOTE_ADDR
+		                  .."', MAC '"..macaddr
+		                  .."' till "..os.date("%Y%m%d-%H:%M:%S", expire)
+		                 )
 	end
 	
-	fwwrt.util.logger("LOG_DEBUG","limit = '"..totalTimeLim.."' used = '"..totalTimeUsed..
-		"' lim - used = '"..totalTimeLim-totalTimeUsed.."'")
-	fwwrt.util.logger("LOG_DEBUG",request.POST.username .." expires on "..os.date(t, expire)..
-		" logged in on "..os.date())
-	
-	local macaddr = fwwrt.iptkeeper.getMac(wsapi_env.REMOTE_ADDR)
-    if (not macaddr)
-    	then
-		fwwrt.util.logger("LOG_ERR", "Bad login for '"..request.POST.username.."' from '"..wsapi_env.REMOTE_ADDR.."': address unknown")
-		return showLoginForm(wsapi_env, request.POST.origUrl, "unknownIP")
-	end
-	
-	if not pcall(doLogin, wsapi_env.REMOTE_ADDR, macaddr, userid) then -- if we already have 
-		doLogout(wsapi_env.REMOTE_ADDR)                            -- this ip in activeDB
-		doLogin (wsapi_env.REMOTE_ADDR, macaddr, userid)
-	end
-	
-	fwwrt.util.logger("LOG_INFO", "Login '"..request.POST.username
-	                  .."' on IP '"..wsapi_env.REMOTE_ADDR
-	                  .."', MAC '"..macaddr
-	                  .."' till "..os.date("%Y%m%d-%H:%M:%S", expire)
-	                 )
-
 	local values = {actionUrl = "https://"..hostname.."/", dir = webDir}
 	local template = fwwrt.simplelp.loadFile(webDir.."/showLogout.template", values)
 	local env = {
