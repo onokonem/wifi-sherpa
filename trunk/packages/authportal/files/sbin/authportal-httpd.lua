@@ -96,13 +96,13 @@ local servers = {["*"] = {[fwwrt.util.uciGet('fwwrt.ports.unauth', 'number')] =
                                    }
                          ,[fwwrt.util.uciGet('fwwrt.ports.auth', 'number')] = 
                                    {rules = {publicRule
-                                            ,catchAll(fwwrt.authportal.processLogoutForm)
+                                            ,catchAll(fwwrt.authportal.processLoginForm)
                                             }
                                    }
                          ,[fwwrt.util.uciGet('fwwrt.ports.authSSL', 'number')] = 
                                    {rules = {adminRule
                                             ,publicRule
-                                            ,catchAll(fwwrt.authportal.processLogoutForm)
+                                            ,catchAll(fwwrt.authportal.processLoginForm) --processLogoutForm
                                             }
                                    ,ssl   = ssl
                                    }
