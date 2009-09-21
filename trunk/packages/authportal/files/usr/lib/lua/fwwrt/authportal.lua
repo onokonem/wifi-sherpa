@@ -108,8 +108,10 @@ for key, val in pairs(statement)
 	end
 end
 
-commonHeaders   = {["Content-type"] = "text/html; charset=utf-8"
-                        }
+commonHeaders   = {["Content-type"] = "text/html; charset=utf-8"}
+noCashHeaders   = commonHeaders
+noCashHeaders   = {["Cache-Control"] = "no-cache, must-revalidate"}
+                        
 function redirectHeaders(path)
 	return {["Content-type"] = "text/html; charset=utf-8"
 	       ,["Location"]     = path
@@ -203,7 +205,7 @@ function showLoginForm(wsapi_env, oriurl, reason, message, delay) --showlogin
 		coroutine.yield(template:run(env))
 		end
 
-	return 200, commonHeaders, coroutine.wrap(process)
+	return 200, noCashHeaders, coroutine.wrap(process)
 end
 
 function checkLogin(user)
