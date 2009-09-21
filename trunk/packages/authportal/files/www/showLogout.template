@@ -1,8 +1,7 @@
 <html>
  <head>
-  <title>Страница аутентификации</title>
-	<meta HTTP-EQUIV="REFRESH" content="7; URL=<%=env.origUrl%>">
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Страница аутентификации</title>
+	<%!env.dir.."/commonHead.template"%>
  </head>
  <body>
   <%!env.dir.."/adminLink.template"%>
@@ -17,10 +16,12 @@
 		</td>
        </tr>
 	   <tr>
-		<td ALIGN="right">		
-        <INPUT TYPE="submit" name="logout" VALUE="Отключите меня от интернета!"/></td>
-		<p><b>Компания «Седьмой Слон» - проектирование и разработка сетевых решений, <a href="http://www.sslon.info">sslon.info</a></b></p>
-       	</td>
+		<td ALIGN="right">
+			<% if fwwrt.util.uciGet('fwwrt.show.logout',        'boolean') then %>
+				<INPUT TYPE="submit" name="logout" VALUE="Отключите меня от интернета!"/>
+			<% end %>
+			<p><b>Компания «Дьярвур» - проектирование и разработка сетевых решений, <a href="http://djarvur.net">djarvur.net</a></b></p>
+		</td>
 	   </tr>
       </table>
      </FORM>
