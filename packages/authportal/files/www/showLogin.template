@@ -2,6 +2,8 @@
  <head>
   <title>Страница аутентификации</title>
 <%!env.dir.."/commonHead.template"%>
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<META HTTP-EQUIV="Expires" CONTENT="-1">
  </head>
  <body>
 <%!env.dir.."/adminLink.template"%>
