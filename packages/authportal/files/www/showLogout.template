@@ -2,6 +2,7 @@
  <head>
 	<title>Страница аутентификации</title>
 	<%!env.dir.."/commonHead.template"%>
+	<meta HTTP-EQUIV="REFRESH" content="7; URL=<%=env.origUrl%>">
  </head>
  <body>
   <%!env.dir.."/adminLink.template"%>
