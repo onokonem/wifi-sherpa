@@ -31,15 +31,14 @@
 	</script>
 	
 	<span id="progressbar">[ Loading Progress Bar ]</span>
-	<script> bar();</script> <% local pc = 0 %>
+	<script type="text/javascript"> bar();</script> <% local pc = 0 %>
 <% local i for i=1, env.pages do --  onload="window.print();"%>
 <%!env.dir.."/cardTable.template"%>
 <% end %>
-	<script>
+	<script type="text/javascript">
 		manualPB2.setPercentage('100');
 		hideStuff("progressbar");
 		window.print()
 	</script>
-
 </body>
 </html>     
