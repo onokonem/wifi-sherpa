@@ -1,8 +1,8 @@
-		<tr valign="top">
-			<td width='40%' nowrap>
+		<tr>
+			<td>
 <%!env.dir.."/card.template"%>
 			</td>
-			<td width='40%' nowrap>
+			<td>
 <%!env.dir.."/card.template"%>
 			</td>
 		</tr>

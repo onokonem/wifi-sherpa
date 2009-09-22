@@ -27,13 +27,3 @@ stop() {
   kill "$runningPid"
   sleep 5
 }
-
-#restart() {
-#	echo "stopping..."
-#	stop()  1>&2
-#	echo "stopped"
-#	sleep 3
-#	echo "starting..."
-#	start ()  1>&2
-#	echo "started"
-#}
