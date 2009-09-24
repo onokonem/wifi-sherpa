@@ -3,13 +3,14 @@
 <style type="text/css">
 .card {
 	font-family: Verdana, Arial, Helvetica, sans-serif; 
-	font-size: 9pt; /* Размер шрифта в пунктах */ 
+	font-size: 7pt; /* Размер шрифта в пунктах */ 
 	border-style: solid;
 	border-color: #000000;
 	border-width: 1;
-	width: 115mm;
-/*	height: 23%; */
-	height: 50mm; 
+/*	width: 115mm;*/
+	width: 100%;
+	height: 100%; 
+/*	height: 55mm; */
 	background :#e1e1e1;
 	}
 .mid
@@ -20,16 +21,16 @@
 	{
 	font-weight: bold;
 	}
-.Pnotused
+/*.Pnotused
 	{
 	font-family: Verdana, Arial, Helvetica, sans-serif; 
-	font-size: 8pt; /* Размер шрифта в пунктах */ 
+	font-size: 8pt; /* Размер шрифта в пунктах *-/ 
 	}
-.ULnotused
-	{
-	font-family: Verdana, Arial, Helvetica, sans-serif; 
-	font-size: 8pt; /* Размер шрифта в пунктах */ 
-	}
+*//*.ULnotused*/
+/*	{*/
+/*	font-family: Verdana, Arial, Helvetica, sans-serif; */
+/*	font-size: 8pt; /* Размер шрифта в пунктах */ */
+/*	}*/
 table#adminLogin
 	{
 	border-width: 0pt;
@@ -43,30 +44,32 @@ table#adminLogin
 	}
 .cards
 	{
-	padding: 5pt;
+	padding: 0pt;
 	border-style: solid;
 	border-color: #000000;
 	border-width: 1pt;
 	height: 100%;
-	font-family: Verdana, Arial, Helvetica, sans-serif; 
+	width:  100%;
+/*	font-family: Verdana, Arial, Helvetica, sans-serif; */
 /*	font-size: 8pt; /* Размер шрифта в пунктах */
 	page-break-after: always;
-/*	tr {height:85mm;} */
+/*	tr {height:95mm;}*/ 
 	}
 .lastCard
 	{
-	padding: 5pt;
+	padding: 0pt;
 	border-style: solid;
 	border-color: #000000;
 	border-width: 1pt;
 	height: 100%;
-	font-family: Verdana, Arial, Helvetica, sans-serif; 
+/*	font-family: Verdana, Arial, Helvetica, sans-serif; */
 /*	font-size: 8pt; /* Размер шрифта в пунктах */
 	page-break-after: auto;
 /*	tr {height:85mm;} */
 	}
 table#singleCard
 	{
+		width: 40%;
 		border-style: solid;
 		border-color: #000000;
 		border-width: 1;
