@@ -33,9 +33,18 @@ sshPort="`        uci get fwwrt.ports.ssh`"              || exit 1
 verbose="`        getBool fwwrt.log.verbose`"            || exit 1
 IPTABLES="`       uci get fwwrt.firewall.iptables`"      || exit 1
 
+upnpLib="/lib/miniupnpd/firewall.sh"
 upnpTcp=5000
 upnpUdp=1900
 
+test -f "$upnpLib" &&
+. "$upnpLib"
+
+test "$upnpOn" == "true" &&
+{
+upnp_firewall_stop  || true
+upnp_firewall_start
+}
 
 test "$fixMTU" -gt 0 && {
 # This is dirty fix, just because OpenWRT does not clean mangle table
