@@ -26,6 +26,8 @@ upnpOn="`         getBool fwwrt.firewall.upnpEnabled`"   || exit 1
 unauthHttpPort="` uci get fwwrt.ports.unauth`"           || exit 1
 unauthHttpsPort="`uci get fwwrt.ports.unauthSSL`"        || exit 1
 unauthDnsPort="`  uci get fwwrt.ports.unauthDNS`"        || exit 1
+dnsFakeAddr="`    uci get fwwrt.firewall.dnsFakeAddr`"   || exit 1
+dnsFakePort="`    uci get fwwrt.firewall.dnsFakeAddr`"   || exit 1
 authHttpPort="`   uci get fwwrt.ports.auth`"             || exit 1
 authHttpsPort="`  uci get fwwrt.ports.authSSL`"          || exit 1
 squidPort="`      uci get fwwrt.ports.squid`"            || exit 1
@@ -54,6 +56,11 @@ test "$verbose" == "true" &&
 $IPTABLES -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j LOG --log-level debug --log-prefix 'fixMTU '
 $IPTABLES -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss "$fixMTU"
 }
+
+$IPTABLES -t nat    -N fakedns_OUTPUT
+$IPTABLES -t nat    -I fakedns_OUTPUT   -p tcp -m tcp -d "$dnsFakeAddr" --dport 53 -j DNAT --to-destination 127.0.0.1:"$dnsFakePort"
+$IPTABLES -t nat    -I fakedns_OUTPUT   -p udp -m udp -d "$dnsFakeAddr" --dport 53 -j DNAT --to-destination 127.0.0.1:"$dnsFakePort"
+$IPTABLES -t nat    -I OUTPUT -j fakedns_OUTPUT
 
 $IPTABLES -t nat    -N authorized_INPUT
 test "$verbose" == "true" &&
