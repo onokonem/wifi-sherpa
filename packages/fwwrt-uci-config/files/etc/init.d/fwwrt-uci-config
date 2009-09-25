@@ -45,6 +45,8 @@ config 'fwwrt' 'firewall'
     option 'includepath'     '/etc/firewall.fwwrt'
     option 'fixMTU'          '1350'
     option 'upnpEnabled'     'yes'
+    option 'dnsFakePort'     '4053'
+    option 'dnsFakeAddr'     '127.5.9.1'
 
 config 'fwwrt' 'dhcp'
     option 'kickoffTimeout'  '5m'
