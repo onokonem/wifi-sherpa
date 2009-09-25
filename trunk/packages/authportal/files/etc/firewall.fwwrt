@@ -37,11 +37,11 @@ upnpLib="/lib/miniupnpd/firewall.sh"
 upnpTcp=5000
 upnpUdp=1900
 
-test -f "$upnpLib" &&
-. "$upnpLib"
+test -f "$upnpLib" || upnpOn = "noUPNPlibFile"
 
 test "$upnpOn" == "true" &&
 {
+. "$upnpLib"
 upnp_firewall_stop  || true
 upnp_firewall_start
 }
