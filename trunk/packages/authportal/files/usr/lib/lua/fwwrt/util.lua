@@ -94,7 +94,7 @@ if (not success) then
 	uci.get_all = function() error("uci module could not be loaded: "..errMsg) end
 	end
 
-local function findSubsection(section, subsectionName)
+local function findSubsection(section, subsectionName, subsectionIndex)
 	if (not section) then return nil end
 
 	if (section[subsectionName]) then return section[subsectionName] end
@@ -102,8 +102,9 @@ local function findSubsection(section, subsectionName)
 	local key, val
 	for key, val in pairs(section)
 		do
-		if (val['.type'] and (val['.type'] == subsectionName))
+		if (val['.type'] and (val['.type'] and (val['.type'] == subsectionName) and (subsectionIndex == 0))
 			then return val end
+		subsectionIndex = subsectionIndex - 1
 		end
 
 	return nil
@@ -131,10 +132,14 @@ function uciGet(paramName, paramType)
 
 	local err = "Parameter  '"..paramName.."' not found"
 	
-    local _, _, sectionName, subsectionName, optionName = string.find(paramName, "^([^%.]+)%.([^%.]+)%.([^%.]+)$")
+    local _, _, sectionName, subsectionName, subsectionIndex, optionName = string.find(paramName, "^([^%.]+)%.([^%.%[]+)%[(%d+)%]%.([^%.]+)$")
+    if (not optionName) then
+    	_, _, sectionName, subsectionName, optionName = string.find(paramName, "^([^%.]+)%.([^%.]+)%.([^%.]+)$")
+    	subsectionIndex = 0
+    	end
     assert(optionName, err)
 
-	local subsection = findSubsection(uci.get_all(sectionName), subsectionName)
+	local subsection = findSubsection(uci.get_all(sectionName), subsectionName, subsectionIndex)
 	assert((subsection and (subsection[optionName] ~= nil)), err)
 	
 	return converter(subsection[optionName])
