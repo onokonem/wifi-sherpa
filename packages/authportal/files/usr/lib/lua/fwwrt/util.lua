@@ -102,9 +102,11 @@ local function findSubsection(section, subsectionName, subsectionIndex)
 	local key, val
 	for key, val in pairs(section)
 		do
-		if (val['.type'] and (val['.type'] and (val['.type'] == subsectionName) and (subsectionIndex == 0))
-			then return val end
-		subsectionIndex = subsectionIndex - 1
+		if (val['.type'] and (val['.type'] and (val['.type'] == subsectionName)) then
+			if (subsectionIndex == 0)
+				then return val end
+			subsectionIndex = subsectionIndex - 1
+			end
 		end
 
 	return nil
