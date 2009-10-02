@@ -141,7 +141,7 @@ function uciGet(paramName, paramType)
     	end
     assert(optionName, err)
 
-	local subsection = findSubsection(uci.get_all(sectionName), subsectionName, subsectionIndex)
+	local subsection = findSubsection(uci.get_all(sectionName), subsectionName, 0 + subsectionIndex)
 	assert((subsection and (subsection[optionName] ~= nil)), err)
 	
 	return converter(subsection[optionName])
