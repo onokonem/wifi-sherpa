@@ -1,0 +1,26 @@
+#!/bin/sh /etc/rc.common
+
+START=10
+
+uciFindAndRemove() {
+	name=`uci show "$1"|grep "$2"'$'|cut -d '.' -f 1,2|head -n 1`
+	while test -n "$name"
+		do
+		uci delete "$name"
+		name=`uci show "$1"|grep "$2"'$'|cut -d '.' -f 1,2|head -n 1`
+		done
+	echo
+	}
+
+start() {
+	uciFindAndRemove firewall ".path=/etc/firewall.fixmtu"
+	uci add firewall include
+	uci set firewall.@include[-1].path="/etc/firewall.fixmtu"
+
+	uci commit
+	}
+
+stop() {
+        echo "Nothing to be done" 1>&2
+        return 0
+}

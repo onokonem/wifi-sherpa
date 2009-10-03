@@ -83,9 +83,12 @@ EOF
 	
 	uci set dhcp.lan.leasetime="`uci get fwwrt.dhcp.kickoffTimeout`"
 
+	test -f "`uci get fwwrt.firewall.includepath`" &&
+	{
 	uciFindAndRemove firewall ".path=`uci get fwwrt.firewall.includepath`"
 	uci add firewall include
 	uci set firewall.@include[-1].path="`uci get fwwrt.firewall.includepath`"
+	}
 
 	uciFindAndRemove luci_hosts ".hostname=`uci get fwwrt.authportal.httpsName`"
 	uci add luci_hosts host

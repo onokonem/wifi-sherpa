@@ -24,7 +24,7 @@ define Package/madwimax
   CATEGORY:=FWWRT
   TITLE:=An userspace driver for devices based on Samsung CMC-730 chip
   URL:=http://code.google.com/p/madwimax/
-  DEPENDS:=+libusb1 +kmod-tun +libpthread
+  DEPENDS:=+libusb1 +kmod-tun +libpthread +fixmtu
 endef
 
 
