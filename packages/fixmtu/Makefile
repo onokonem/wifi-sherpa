@@ -7,7 +7,7 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=authportal
+PKG_NAME:=fixmtu
 PKG_VERSION:=0.0.1
 PKG_RELEASE:=5
 
@@ -29,10 +29,10 @@ define Build/Compile
 	# Nothing to be done
 endef
 
-define Package/authportal/install
+define Package/fixmtu/install
 	$(INSTALL_DIR)  $(1)/etc/init.d/
 	$(INSTALL_BIN)  ./files/etc/init.d/fixmtu $(1)/etc/init.d/
 	$(INSTALL_DATA) ./files/etc/firewall.fixmtu    $(1)/etc/
 endef
 
-$(eval $(call BuildPackage,authportal))
+$(eval $(call BuildPackage,fixmtu))
