@@ -34,7 +34,7 @@ MAKE_FLAGS += PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET
 
 define Package/luamd5/install
 	$(INSTALL_DIR)  $(1)/usr/lib/lua/
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/lua/lcrypto.so.$(PKG_VERSION) $(1)/usr/lib/lua/crypto.so
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lua/* $(1)/usr/lib/lua/
 endef
 
 $(eval $(call BuildPackage,luamd5))
