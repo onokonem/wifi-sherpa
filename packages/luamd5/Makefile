@@ -15,6 +15,8 @@ PKG_SOURCE:=md5-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://luaforge.net/frs/download.php/3355/
 PKG_MD5SUM:=68874cff64547f2157d5ecdc3572b544
 
+PKG_BUILD_DIR:=$(BUILD_DIR)/md5-$(PKG_VERSION)
+
 include $(INCLUDE_DIR)/package.mk
 
 PKG_INSTALL=1
