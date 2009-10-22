@@ -1,0 +1,3 @@
+#!/bin/sh -ux
+
+echo "$@" > /tmp/ppp-params.txt
