@@ -30,8 +30,10 @@ endef
 
 define Package/set-srodi/install
 	$(INSTALL_DIR) $(1)/etc/ppp/ip-up.d/
-	$(INSTALL_BIN) ./files/etc/udhcpc.user           $(1)/etc/
-	$(INSTALL_BIN) ./files/etc/ppp/ip-up.d/set-srodi $(1)/etc/ppp/ip-up.d/
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/iface/
+	$(INSTALL_BIN) ./files/etc/udhcpc.user               $(1)/etc/
+	$(INSTALL_BIN) ./files/etc/ppp/ip-up.d/set-srodi     $(1)/etc/ppp/ip-up.d/
+	$(INSTALL_BIN) ./files/etc/hotplug.d/iface/set-srodi $(1)/etc/hotplug.d/iface/
 endef
 
 $(eval $(call BuildPackage,set-srodi))
