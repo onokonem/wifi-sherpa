@@ -1,1 +1,9 @@
-set > /tmp/hotplug-srodi.txt
+#!/bin/sh -ux
+
+interfaceName="$INTERFACE"
+
+{
+echo "`date` '$interfaceName' '$0' '$@'"
+set
+echo "##########################################"
+} >> "/tmp/hotplug-srodi.$interfaceName.txt"

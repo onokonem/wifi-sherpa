@@ -1,1 +1,10 @@
-set > /tmp/udhcpc-set.txt
+#!/bin/sh -ux
+
+interfaceName="$interface"
+
+{
+echo "`date` '$interfaceName' '$0' '$@'"
+set
+echo "##########################################"
+} >> "/tmp/udhcpc-srodi.$interfaceName.txt"
+

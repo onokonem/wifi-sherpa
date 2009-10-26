@@ -1,3 +1,7 @@
 #!/bin/sh -ux
 
-echo "$@" > /tmp/ppp-params.txt
+{
+echo "`date` '$interfaceName' '$0' '$@'"
+set
+echo "##########################################"
+} >> /tmp/ppp-params.txt
