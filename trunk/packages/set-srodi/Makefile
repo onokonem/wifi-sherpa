@@ -34,6 +34,7 @@ define Package/set-srodi/install
 	$(INSTALL_BIN) ./files/etc/udhcpc.user               $(1)/etc/
 	$(INSTALL_BIN) ./files/etc/ppp/ip-up.d/set-srodi     $(1)/etc/ppp/ip-up.d/
 	$(INSTALL_BIN) ./files/etc/hotplug.d/iface/set-srodi $(1)/etc/hotplug.d/iface/
+	$(INSTALL_BIN) ./files/sbin/multiwan-routing.sh      $(1)/sbin/
 endef
 
 $(eval $(call BuildPackage,set-srodi))
