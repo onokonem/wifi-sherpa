@@ -1,10 +1,5 @@
-#!/bin/sh -ux
+#!/bin/sh -u
 
-interfaceName="$interface"
+ifaceName="`set|grep "^CONFIG_.*_ifname='$interface'\$"|cut -d '_' -f 2`"
 
-{
-echo "`date` '$interfaceName' '$0' '$@'"
-set
-echo "##########################################"
-} >> "/tmp/udhcpc-srodi.$interfaceName.txt"
-
+/sbin/multiwan-routing.sh "$ifaceName" "$1" "$ip" "$router" 2>&1 | logger -t multiwan -p daemon.notice

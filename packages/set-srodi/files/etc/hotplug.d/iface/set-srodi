@@ -1,9 +1,4 @@
-#!/bin/sh -ux
+#!/bin/sh -u
 
-interfaceName="$INTERFACE"
-
-{
-echo "`date` '$interfaceName' '$0' '$@'"
-set
-echo "##########################################"
-} >> "/tmp/hotplug-srodi.$interfaceName.txt"
+test "$PROTO" == 'static' &&
+/sbin/multiwan-routing.sh "$INTERFACE" "$ACTION" "`uci get network.$INTERFACE.ipaddr`" "`uci get network.$INTERFACE.gateway`" 2>&1 | logger -t multiwan -p daemon.notice
