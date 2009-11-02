@@ -1,4 +1,4 @@
-#!/bin/sh -ux
+#!/bin/sh -u
 
 ifaceName="$1"
 ifaceAction="$2"
@@ -34,10 +34,25 @@ setRoute()
   ip route replace to "$1" via "$2" src "$3" table "$4"
   }
 
+ipRuleDel()
+  {
+  ip rule show|grep "^$1\:"|
+    {
+    read p1 p2 from table
+    while test -n "$from"
+      do
+      body=""
+      test "$from" == "all" || body="from $from $table"
+      ip rule delete priority "$1" $body 
+      read p1 p2 from table
+      done
+    }
+  }
+
 setRule()
   {
-  ip rule delete priority "$1"
-  ip rule add    priority "$1" from "$2" table "$3"
+  ipRuleDel "$1"
+  ip rule add priority "$1" from "$2" table "$3"
   }
 
 setSelfRoute()
