@@ -1,0 +1,19 @@
+#!/bin/sh -ux
+
+local state="${ZONE}_${INTERFACE}"
+local active
+config_get active "$state" ifname
+
+[ -z "$active" ] &&
+  {
+  local ipaddr gateway
+  config_get ipaddr  "$INTERFACE" ipaddr
+  config_get gateway "$INTERFACE" gateway
+
+  local ifaceAction="down"
+  test "$ACTION" == "add" && ifaceAction="up"
+
+  echo "Setting policy routing for interface '$INTERFACE' (dev '$DEVICE', ip '$ipaddr', gw '$gateway') $ifaceAction"
+
+  /sbin/multiwan-routing.sh "$INTERFACE" "$ifaceAction" "$ipaddr" "$gateway"
+  } 2>&1 | logger -t multiwan -p daemon.notice
