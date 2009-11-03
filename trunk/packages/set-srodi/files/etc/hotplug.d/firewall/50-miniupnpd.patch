@@ -1,5 +1,5 @@
---- 50-miniupnpd.orig	2009-11-03 02:00:22.000000000 +0300
-+++ 50-miniupnpd	2009-11-03 05:59:33.000000000 +0300
+--- 50-miniupnpd.orig	2009-11-03 13:38:49.000000000 +0300
++++ 50-miniupnpd	2009-11-03 13:31:38.000000000 +0300
 @@ -1,5 +1,28 @@
  #!/bin/sh
  
@@ -29,7 +29,7 @@
  /etc/init.d/miniupnpd enabled && {
  
  	local state="${ZONE}_${INTERFACE}"
-@@ -8,7 +31,7 @@
+@@ -8,14 +31,14 @@
  	config_load upnpd
  	config_get extif config external_iface
  
@@ -38,6 +38,14 @@
  
  		local active
  		config_get active "$state" ifname
+ 
+ 		[ -z "$active" ] && {
+ 			local ipaddr
+-			config_get ipaddr "$extif" ipaddr
++			config_get ipaddr "$INTERFACE" ipaddr
+ 
+ 			logger -t "upnp" "adding $INTERFACE ($DEVICE - $ipaddr) to firewall"
+ 
 @@ -29,7 +52,7 @@
  			uci_set_state upnpd "$state" ipaddr "$ipaddr"
  		}
