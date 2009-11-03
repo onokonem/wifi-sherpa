@@ -104,14 +104,18 @@ setPolicyRouting()
 
 #######################################################################
 
-test "$ifaceAction" == "ifup" -o "$ifaceAction" == "bound" ||
+test "$ifaceAction" == "up" ||
   {
+  echo "Interface '$ifaceName' down, removing corresponding routes"
   for t in `grep "_$ifaceName\$" "$rt_tables"|cut -f 2`
     do
+    echo "Flushing table '$t'"
     ip route flush table "$t"
     done
   exit 0
   }
+
+echo "Interface '$ifaceName' up, adding corresponding routes"
 
 registerTable copyofmain
 ip route flush table copyofmain
