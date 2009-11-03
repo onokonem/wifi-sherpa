@@ -1,5 +1,0 @@
-#!/bin/sh -u
-
-ifaceName="`set|grep "^CONFIG_.*_ifname='$interface'\$"|cut -d '_' -f 2`"
-
-/sbin/multiwan-routing.sh "$ifaceName" "$1" "$ip" "$router" 2>&1 | logger -t multiwan -p daemon.notice
