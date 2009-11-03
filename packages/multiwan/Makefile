@@ -7,13 +7,13 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=set-srodi
+PKG_NAME:=multiwan
 PKG_VERSION:=0.0.1
 PKG_RELEASE:=1
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/set-srodi
+define Package/multiwan
   SECTION:=fwwrt
   CATEGORY:=FWWRT
   TITLE:=Set Static Routes On Dynamic Interfaces
@@ -28,14 +28,26 @@ define Build/Compile
 	# No compile required
 endef
 
-define Package/set-srodi/install
-	$(INSTALL_DIR) $(1)/etc/ppp/ip-up.d/
-	$(INSTALL_DIR) $(1)/etc/hotplug.d/iface/
-	$(INSTALL_BIN) ./files/etc/udhcpc.user               $(1)/etc/
-	$(INSTALL_BIN) ./files/etc/ppp/ip-up.d/set-srodi     $(1)/etc/ppp/ip-up.d/
-	$(INSTALL_BIN) ./files/etc/hotplug.d/iface/set-srodi $(1)/etc/hotplug.d/iface/
-	$(INSTALL_BIN) ./files/sbin/multiwan-routing.sh      $(1)/sbin/
+define Package/multiwan/install
+	$(INSTALL_DIR)  $(1)/etc/hotplug.d/firewall/
+	$(INSTALL_BIN)  ./files/etc/hotplug.d/firewall/50-multiwan $(1)/etc/hotplug.d/firewall/
+	$(INSTALL_DATA) ./files/etc/hotplug.d/firewall/50-miniupnpd.patch $(1)/etc/hotplug.d/firewall/
+	$(INSTALL_BIN)  ./files/sbin/multiwan-routing.sh $(1)/sbin/
 endef
 
-$(eval $(call BuildPackage,set-srodi))
+define Package/multiwan/postinst
+#!/bin/sh
+
+if test -z "$${IPKG_INSTROOT}"
+  then
+  echo "This package is for image-generation-time install ONLY"
+  exit 1
+  fi
+
+cd "$${IPKG_INSTROOT}/etc/hotplug.d/firewall" &&
+patch < 50-miniupnpd.patch &&
+rm 50-miniupnpd.patch
+endef
+
+$(eval $(call BuildPackage,multiwan))
 
