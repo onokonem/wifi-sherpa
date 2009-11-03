@@ -1,38 +1,49 @@
 --- 50-miniupnpd.orig	2009-11-03 02:00:22.000000000 +0300
-+++ 50-miniupnpd	2009-11-03 03:41:33.000000000 +0300
-@@ -1,5 +1,17 @@
++++ 50-miniupnpd	2009-11-03 05:59:33.000000000 +0300
+@@ -1,5 +1,28 @@
  #!/bin/sh
  
-+upnpOn()
++config_check_option() # option value param
 +  {
-+  local ri=0
-+  upnpIface="`uci get multiwan.@upnpon[$ri].iface`"
-+  while test -n "$upnpIface"
-+    do
-+    test "$1" == "$upnpIface" && return
-+    done
-+  false
++  local val
++  config_get val "$3" "$1"
++  test "$val" == "$2" && found="$found $3"
 +  }
 +
++config_check_list() # section param option value
++  {
++  local CONFIG_SECTIONS
++
++  config_load "$1"
++
++  local found='';
++  config_foreach "config_check_option \"$3\" \"$4\"" "$2"
++  test -n "$found" && echo "$found"
++  }
++
++upnpOn() # listName
++  {
++  test "$1" == "$2" || config_check_list multiwan upnpon iface "$1" > /dev/null
++  }
 +
  /etc/init.d/miniupnpd enabled && {
  
  	local state="${ZONE}_${INTERFACE}"
-@@ -8,7 +20,7 @@
+@@ -8,7 +31,7 @@
  	config_load upnpd
  	config_get extif config external_iface
  
 -	if [ "$ACTION" = "add" ] && [ "$INTERFACE" = "$extif" ]; then
-+	if [ "$ACTION" = "add" ] && { [ "$INTERFACE" = "$extif" ] || upnpOn "$INTERFACE" } ; then
++	if [ "$ACTION" = "add" ] && upnpOn "$INTERFACE" "$extif"; then
  
  		local active
  		config_get active "$state" ifname
-@@ -29,7 +41,7 @@
+@@ -29,7 +52,7 @@
  			uci_set_state upnpd "$state" ipaddr "$ipaddr"
  		}
  	
 -	elif [ "$ACTION" = "remove" ] && [ "$INTERFACE" = "$extif" ]; then
-+	elif [ "$ACTION" = "remove" ] && { [ "$INTERFACE" = "$extif" ] || upnpOn "$INTERFACE" } ; then
++	elif [ "$ACTION" = "remove" ] && upnpOn "$INTERFACE" "$extif"; then
  
  		local ifname ipaddr
  		config_get ifname "$state" ifname
