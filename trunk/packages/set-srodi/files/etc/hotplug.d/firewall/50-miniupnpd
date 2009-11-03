@@ -38,7 +38,7 @@ upnpOn() # listName
 
 		[ -z "$active" ] && {
 			local ipaddr
-			config_get ipaddr "$extif" ipaddr
+			config_get ipaddr "$INTERFACE" ipaddr
 
 			logger -t "upnp" "adding $INTERFACE ($DEVICE - $ipaddr) to firewall"
 
