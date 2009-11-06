@@ -4,6 +4,7 @@ ifaceName="$1"
 ifaceAction="$2"
 ifaceIp="$3"
 ifaceGw="$4"
+nameservers="$5"
 
 ruleShiftLocal="10"
 ruleShiftSelf="100"
@@ -114,6 +115,12 @@ test -n "$ifaceGw" &&
     do
     test "$riIface" == "$ifaceName" && setSelfRoute "$ifaceName" "$ri" "$ifaceIp" "$ifaceGw"
     ri="`expr "$ri" + 1`"
+    done
+  #
+  test -n "$nameservers" &&
+  for ns in $nameservers
+    do
+    setRoute $ns $ifaceGw $ifaceIp main
     done
   }
 

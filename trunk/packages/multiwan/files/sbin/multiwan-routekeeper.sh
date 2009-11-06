@@ -24,18 +24,44 @@ method_ping()
   return $retVal
   }
 
+write_resolv()
+	{
+	test -n "$2" &&
+	echo "search $2" >> "$1"
+
+	local ns
+	test -n "$3" &&
+	for ns in $3
+	  do
+      echo "nameserver $ns" >> "$1"
+	  done
+	}
+
+write_null()
+	{
+	# nothing to do
+	}
+
 keepTheRoutes()
   {
   config_load multiwan
 
-  conntest_method="method_$CONFIG_conntest_method"
+  local conntest_method="method_$CONFIG_conntest_method"
+
+  local resolvfile="`uci get dhcp.@dnsmasq[0].resolvfile`"
+  local write_resolv_func='write_null';
+  test -n "$resolvfile" &&
+    {
+    write_resolv_func='write_resolv'
+    echo > "$resolvfile.multiwan.tmp"
+    }
 
   local iface
-  
+  #
   cd "$keepDir" &&
   for iface in *
     do
-    local device address gateway
+    local device address gateway nameservers domain
     . "./$iface"
     test -n "$gateway" &&
       {
@@ -46,20 +72,23 @@ keepTheRoutes()
         test -f "$keepDir/../up/$iface" ||
           {
           mkdir -p "$keepDir/../up" &&
-          /sbin/multiwan-routing.sh "$iface" up   "$address" "$gateway" &&
+          /sbin/multiwan-routing.sh "$iface" up   "$address" "$gateway" "$nameservers" &&
           touch "$keepDir/../up/$iface" &&
           echo "up-flag '$iface' created"
           }
       else
         test -f "$keepDir/../up/$iface" &&
           {
-          /sbin/multiwan-routing.sh "$iface" down "$address" "$gateway" &&
+          /sbin/multiwan-routing.sh "$iface" down "$address" "$gateway" "$nameservers" &&
           rm -f "$keepDir/../up/$iface" &&
           echo "up-flag '$iface' removed"
           }
         fi
       }
+    $write_resolv_func "$resolvfile.multiwan.tmp" "$domain" "$nameservers"
     done
+  test -n "$resolvfile" &&
+  mv -f "$resolvfile.multiwan.tmp" "$resolvfile"
   }
 
 ####################################################################
