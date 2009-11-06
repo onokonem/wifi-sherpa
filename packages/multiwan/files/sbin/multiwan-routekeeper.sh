@@ -39,7 +39,7 @@ write_resolv()
 
 write_null()
 	{
-	# nothing to do
+	echo "nothing to do with $@"
 	}
 
 keepTheRoutes()

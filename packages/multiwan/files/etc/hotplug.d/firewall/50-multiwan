@@ -27,5 +27,5 @@ EOF
   test -n "$gateway" &&
   /sbin/multiwan-routing.sh "$INTERFACE" down "$ipaddr" "$gateway" "$dns"
 
-  echo "Interface '$INTERFACE' registered with dev '$DEVICE', ip '$ipaddr', gw '$gateway', ns '$dns'"
+  echo "Interface '$INTERFACE' registered with dev '$DEVICE', ip '$ipaddr', gw '$gateway', ns '$dns', domain '$domain'"
   } 2>&1 | logger -t multiwan -p daemon.notice
