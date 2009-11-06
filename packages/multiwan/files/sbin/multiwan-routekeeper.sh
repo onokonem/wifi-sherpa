@@ -43,7 +43,7 @@ keepTheRoutes()
       "$conntest_method" "$address" && result='up'
       if test -n "$result"
         then
-        test -f "$keepDir/up/$iface" ||
+        test -f "$keepDir/../up/$iface" ||
           {
           mkdir -p "$keepDir/../up" &&
           /sbin/multiwan-routing.sh "$iface" up   "$address" "$gateway" &&
@@ -51,7 +51,7 @@ keepTheRoutes()
           echo "Flag '$iface' created"
           }
       else
-        test -f "$keepDir/up/$iface" &&
+        test -f "$keepDir/../up/$iface" &&
           {
           /sbin/multiwan-routing.sh "$iface" down "$address" "$gateway" &&
           rm -vf "$keepDir/../up/$iface"
