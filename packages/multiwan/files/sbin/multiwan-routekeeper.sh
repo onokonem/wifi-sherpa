@@ -48,13 +48,14 @@ keepTheRoutes()
           mkdir -p "$keepDir/../up" &&
           /sbin/multiwan-routing.sh "$iface" up   "$address" "$gateway" &&
           touch "$keepDir/../up/$iface" &&
-          echo "Flag '$iface' created"
+          echo "up-flag '$iface' created"
           }
       else
         test -f "$keepDir/../up/$iface" &&
           {
           /sbin/multiwan-routing.sh "$iface" down "$address" "$gateway" &&
-          rm -vf "$keepDir/../up/$iface"
+          rm -f "$keepDir/../up/$iface" &&
+          echo "up-flag '$iface' removed"
           }
         fi
       }
