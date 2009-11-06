@@ -104,6 +104,19 @@ setPolicyRouting()
 
 #######################################################################
 
+test -n "$ifaceGw" &&
+  {
+  echo "Interface '$ifaceName' has a gateway '$ifaceGw', adding self-routes"
+
+  ri="$ruleShiftSelf"
+  #
+  for riIface in `uci show multiwan|grep "^multiwan.@routing\[[[:digit:]]*\]\.via="|cut -d '=' -f 2|sort -u`
+    do
+    test "$riIface" == "$ifaceName" && setSelfRoute "$ifaceName" "$ri" "$ifaceIp" "$ifaceGw"
+    ri="`expr "$ri" + 1`"
+    done
+  }
+
 test "$ifaceAction" == "up" ||
   {
   echo "Interface '$ifaceName' down, removing corresponding routes"
@@ -129,17 +142,6 @@ ip route show table main | grep -v '^default[[:space:]]' |
     done
   }
 setRule "$ruleShiftLocal" 0.0.0.0/0 copyofmain
-
-test -n "$ifaceGw" &&
-  {
-  ri="$ruleShiftSelf"
-  #
-  for riIface in `uci show multiwan|grep "^multiwan.@routing\[[[:digit:]]*\]\.via="|cut -d '=' -f 2|sort -u`
-    do
-    test "$riIface" == "$ifaceName" && setSelfRoute "$ifaceName" "$ri" "$ifaceIp" "$ifaceGw"
-    ri="`expr "$ri" + 1`"
-    done
-  }
 
 doForEach routing via "setPolicyRouting $ifaceName $ifaceIp $ifaceGw"
 

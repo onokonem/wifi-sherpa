@@ -19,5 +19,6 @@ address='$ipaddr'
 gateway='$gateway'
 EOF
   mv -f "$keepDir/../$INTERFACE.tmp" "$keepDir/$INTERFACE"
+  /sbin/multiwan-routing.sh "$INTERFACE" down "$ipaddr" "$gateway"
   echo "Interface '$INTERFACE' registered with dev '$DEVICE', ip '$ipaddr', gw '$gateway'"
   } 2>&1 | logger -t multiwan -p daemon.notice
