@@ -1,6 +1,6 @@
-#!/bin/sh -u
+#!/bin/sh 
 
-keepDir="/tmp/multiwan"
+keepDir="/tmp/multiwan/ifaces"
 
 . /etc/functions.sh
 
@@ -34,16 +34,16 @@ keepTheRoutes()
     if test -n "$result"
       test -f "$keepDir/up/$iface" ||
         {
-        mkdir -p "$keepDir/up" &&
+        mkdir -p "$keepDir/../up" &&
         /sbin/multiwan-routing.sh "$face" up   "$ipaddr" "$gateway" &&
-        touch "$keepDir/up/$iface" &&
-        echo "Flag '$keepDir/up/$iface' created"
+        touch "$keepDir/../up/$iface" &&
+        echo "Flag '$iface' created"
         }
     else
       test -f "$keepDir/up/$iface" &&
         {
         /sbin/multiwan-routing.sh "$face" down "$ipaddr" "$gateway" &&
-        rm -vf "$keepDir/up/$iface"
+        rm -vf "$keepDir/../up/$iface"
         }
       fi
     done

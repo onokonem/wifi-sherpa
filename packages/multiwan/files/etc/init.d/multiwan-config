@@ -152,9 +152,9 @@ config include
 EOF
     uci import network <<EOF
 config switch eth0
- option vlan0 0 1 2 5*
- option vlan1 4 5
- option vlan2 3 5
+ option vlan0 '0 1 2 5*'
+ option vlan1 '4 5'
+ option vlan2 '3 5'
 
 config interface loopback
  option ifname  lo
