@@ -1,6 +1,6 @@
-#!/bin/sh -ux
+#!/bin/sh -u
 
-keepDir="/tmp/multiwan"
+keepDir="/tmp/multiwan/ifaces"
 
 local state="${ZONE}_${INTERFACE}"
 local active
@@ -12,12 +12,12 @@ config_get active "$state" ifname
   config_get ipaddr  "$INTERFACE" ipaddr
   config_get gateway "$INTERFACE" gateway
 
-  mkdir -p "$keepDir/ifaces" &&
-  cat <<EOF > "$keepDir/$INTERFACE.tmp" &&
+  mkdir -p "$keepDir" &&
+  cat <<EOF > "$keepDir/../$INTERFACE.tmp" &&
 device='$DEVICE'
 address='$ipaddr'
 gateway='$gateway'
 EOF
-  mv -f "$keepDir/$INTERFACE.tmp" "$keepDir/$INTERFACE"
+  mv -f "$keepDir/../$INTERFACE.tmp" "$keepDir/$INTERFACE"
   echo "Interface '$INTERFACE' registered with dev '$DEVICE', ip '$ipaddr', gw '$gateway'"
   } 2>&1 | logger -t multiwan -p daemon.notice
