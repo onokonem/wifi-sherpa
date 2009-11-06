@@ -17,6 +17,7 @@ define Package/multiwan
   SECTION:=fwwrt
   CATEGORY:=FWWRT
   TITLE:=Set Static Routes On Dynamic Interfaces
+  DEPENDS:=+ip +uci +miniupnpd +iptables
 endef
 
 
