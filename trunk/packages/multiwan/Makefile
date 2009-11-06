@@ -29,11 +29,17 @@ define Build/Compile
 endef
 
 define Package/multiwan/install
+	$(INSTALL_DIR)  $(1)/etc/init.d/
+	$(INSTALL_BIN)  ./files/etc/init.d/multiwan-config      $(1)/etc/init.d/
+	$(INSTALL_BIN)  ./files/etc/init.d/multiwan-routekeeper $(1)/etc/init.d/
+	
 	$(INSTALL_DIR)  $(1)/etc/hotplug.d/firewall/
-	$(INSTALL_DIR)  $(1)/sbin/
-	$(INSTALL_BIN)  ./files/etc/hotplug.d/firewall/50-multiwan $(1)/etc/hotplug.d/firewall/
+	$(INSTALL_BIN)  ./files/etc/hotplug.d/firewall/50-multiwan        $(1)/etc/hotplug.d/firewall/
 	$(INSTALL_DATA) ./files/etc/hotplug.d/firewall/50-miniupnpd.patch $(1)/etc/hotplug.d/firewall/
-	$(INSTALL_BIN)  ./files/sbin/multiwan-routing.sh $(1)/sbin/
+
+	$(INSTALL_DIR)  $(1)/sbin/
+	$(INSTALL_BIN)  ./files/sbin/multiwan-routing.sh     $(1)/sbin/
+	$(INSTALL_BIN)  ./files/sbin/multiwan-routekeeper.sh $(1)/sbin/
 endef
 
 define Package/multiwan/postinst
