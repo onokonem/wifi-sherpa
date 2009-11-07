@@ -18,7 +18,7 @@ method_ping()
                       -q                               \
                       "$CONFIG_conntest_destination"   |
                  grep '% packet loss$'|cut -d ' ' -f 7|tr -d '%'`"
-  test "$result" -lt "$CONFIG_conntest_treshold"
+  test -n "$result" -a "$result" -lt "$CONFIG_conntest_treshold"
   local retVal=$?
   echo "testing interface '$1' with method ping, result: $retVal (${result}:${CONFIG_conntest_treshold})"
   return $retVal
@@ -73,6 +73,7 @@ keepTheRoutes()
           {
           mkdir -p "$keepDir/../up" &&
           /sbin/multiwan-routing.sh "$iface" up   "$address" "$gateway" "$nameservers" &&
+          $write_resolv_func "$resolvfile.multiwan.tmp" "$domain" "$nameservers" &&
           touch "$keepDir/../up/$iface" &&
           echo "up-flag '$iface' created"
           }
@@ -85,7 +86,6 @@ keepTheRoutes()
           }
         fi
       }
-    $write_resolv_func "$resolvfile.multiwan.tmp" "$domain" "$nameservers"
     done
   test -n "$resolvfile" &&
   mv -f "$resolvfile.multiwan.tmp" "$resolvfile"
