@@ -57,7 +57,7 @@ cd "$${IPKG_INSTROOT}/etc/hotplug.d/firewall" &&
 patch < 50-miniupnpd.patch ||
 exit 2
 
-rm "$${IPKG_INSTROOT}/etc/hotplug.d/50-miniupnpd.patch"
+rm "$${IPKG_INSTROOT}/etc/hotplug.d/firewall/50-miniupnpd.patch"
 endef
 
 $(eval $(call BuildPackage,multiwan))
