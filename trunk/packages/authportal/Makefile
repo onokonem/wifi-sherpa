@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2009 OpenWrt.orgv
+# Copyright (C) 2009 Djarvur.net, www.djarvur.net, admin@djarvur.net
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -39,7 +39,7 @@ define Package/authportal/install
 	$(INSTALL_DIR)  $(1)/etc/certs/
 	$(INSTALL_DATA) ./files/etc/certs/hotspot.djarvur.net.crt               $(1)/etc/certs/
 	$(INSTALL_DATA) ./files/etc/certs/startssl.com.sub.class1.server.ca.pem $(1)/etc/certs/
-	
+
 	$(INSTALL_DIR)  $(1)/etc/init.d/
 	$(INSTALL_BIN)  ./files/etc/init.d/authportal $(1)/etc/init.d/
 

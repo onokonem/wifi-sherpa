@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006-2008 OpenWrt.org
+# Copyright (C) 2009 Djarvur.net, www.djarvur.net, admin@djarvur.net
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -25,7 +25,7 @@ define Package/luci-wsapi
   CATEGORY:=FWWRT
   TITLE:=WSAPI wrapper for LuCI
   URL:=http://luci.freifunk-halle.net/
-  DEPENDS:=+luci-admin-core +wsapi 
+  DEPENDS:=+luci-admin-core +wsapi
 endef
 
 define Build/Prepare
