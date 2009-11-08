@@ -17,7 +17,7 @@ define Package/multiwan
   SECTION:=fwwrt
   CATEGORY:=FWWRT
   TITLE:=Set Static Routes On Dynamic Interfaces
-  DEPENDS:=+ip +uci +miniupnpd +iptables
+  DEPENDS:=+ip +uci +iptables
 endef
 
 
@@ -52,9 +52,12 @@ if test -z "$${IPKG_INSTROOT}"
   exit 1
   fi
 
+test -f "$${IPKG_INSTROOT}/etc/hotplug.d/firewall/50-miniupnpd" &&
 cd "$${IPKG_INSTROOT}/etc/hotplug.d/firewall" &&
-patch < 50-miniupnpd.patch &&
-rm 50-miniupnpd.patch
+patch < 50-miniupnpd.patch ||
+exit 2
+
+rm "$${IPKG_INSTROOT}/etc/hotplug.d/50-miniupnpd.patch"
 endef
 
 $(eval $(call BuildPackage,multiwan))
