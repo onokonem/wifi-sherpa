@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2009 Djarvur.net
+# Copyright (C) 2009 Djarvur.net, www.djarvur.net, admin@djarvur.net
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -33,7 +33,7 @@ define Package/multiwan/install
 	$(INSTALL_DIR)  $(1)/etc/init.d/
 	$(INSTALL_BIN)  ./files/etc/init.d/multiwan-config      $(1)/etc/init.d/
 	$(INSTALL_BIN)  ./files/etc/init.d/multiwan-routekeeper $(1)/etc/init.d/
-	
+
 	$(INSTALL_DIR)  $(1)/etc/hotplug.d/firewall/
 	$(INSTALL_BIN)  ./files/etc/hotplug.d/firewall/50-multiwan        $(1)/etc/hotplug.d/firewall/
 	$(INSTALL_DATA) ./files/etc/hotplug.d/firewall/50-miniupnpd.patch $(1)/etc/hotplug.d/firewall/

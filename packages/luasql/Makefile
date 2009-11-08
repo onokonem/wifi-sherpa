@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006-2008 OpenWrt.org
+# Copyright (C) 2009 Djarvur.net, www.djarvur.net, admin@djarvur.net
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -19,9 +19,9 @@ include $(INCLUDE_DIR)/package.mk
 
 PKG_INSTALL=1
 
-COMPILE_LIST= 
-DRIVER_LIBS_LIST= 
-INSTALL_LIST= 
+COMPILE_LIST=
+DRIVER_LIBS_LIST=
+INSTALL_LIST=
 
 MAKE_FLAGS+= PREFIX="$(PKG_INSTALL_DIR)/usr" LD="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include -L$(STAGING_DIR)/usr/lib -pedantic -Wall -fpic" LDFLAGS="$(TARGET_LDFLAGS) -shared -fpic"
 

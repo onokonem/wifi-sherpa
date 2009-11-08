@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2009 OpenWrt.orgv
+# Copyright (C) 2009 Djarvur.net, www.djarvur.net, admin@djarvur.net
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
