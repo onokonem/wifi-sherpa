@@ -7,28 +7,19 @@ for module in usbcore uhci usb-ohci scsi_mod sd_mod usb-storage jbd ext2 ext3 ; 
 }; done
 # this may need to be higher if your disk is slow to initialize
 sleep 3s
-
-mnt_prefix="/mnt/linux"
-
-root_part='';
-ri=1
-for part in `fdisk -l |grep 'Linux$'|cut -d ' ' -f 1`
-  do
-  mkdir -p "$mnt_prefix$ri"
-  mount "$part" "$mnt_prefix$ri"
-  test -x "$mnt_prefix$ri/sbin/init" &&
-    root_part="$mnt_prefix$ri"
-  ri="`expr $ri + 1`"
-  done
-
-test -n "$root_part" &&
-  {
-  mount --move /proc "$root_part/proc" &&
-  pivot_root /mnt "$root_part/mnt" &&
-    {
-    mount --move "$root_part/dev"  /dev
-    mount --move "$root_part/tmp"  /tmp
-    mount --move "$root_part/jffs" /jffs 2>&-
-    mount --move "$root_part/sys"  /sys 2>&-
+# Find a first partition
+boot_dev="`fdisk -l |grep 'Linux$'|head -n 1|cut -d ' ' -f 1`"
+# mount the usb stick
+[ -n "$boot_dev" ] && {
+  mount "$boot_dev" /mnt 
+  # if everything looks ok, do the pivot root
+  [ -x /mnt/sbin/init ] && {
+    mount --move /proc /mnt/proc && \
+    pivot_root /mnt /mnt/mnt && {
+      mount --move /mnt/dev /dev
+      mount --move /mnt/tmp /tmp
+      mount --move /mnt/jffs /jffs 2>&-
+      mount --move /mnt/sys /sys 2>&-
     }
   }
+}
