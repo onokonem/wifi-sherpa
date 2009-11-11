@@ -81,7 +81,7 @@ keepTheRoutes()
         test -f "$keepDir/../up/$iface" &&
           {
           /sbin/multiwan-routing.sh "$iface" down "$address" "$gateway" "$nameservers" &&
-          rm -f "$keepDir/../up/$iface" &&
+          rm -f "$keepDir/../up"/* &&
           echo "up-flag '$iface' removed"
           }
         fi
