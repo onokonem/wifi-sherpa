@@ -42,6 +42,20 @@ write_null()
 	echo "nothing to do with $@"
 	}
 
+config_check_option() # option value param
+  {
+  local val
+  config_get val "$3" "$1"
+  test "$val" == "$2" && found="$found $3"
+  }
+
+is_forceup()
+  {
+  local found='';
+  config_foreach "config_check_option iface \"$1\"" forceup
+  test -n "$found"
+  }
+
 keepTheRoutes()
   {
   config_load multiwan
@@ -66,17 +80,17 @@ keepTheRoutes()
     test -n "$gateway" &&
       {
       local result='';
-      "$conntest_method" "$address" && result='up'
+      "$conntest_method" "$address" || is_forceup "$iface" && result='up'
       if test -n "$result"
         then
         test -f "$keepDir/../up/$iface" ||
           {
           mkdir -p "$keepDir/../up" &&
           /sbin/multiwan-routing.sh "$iface" up   "$address" "$gateway" "$nameservers" &&
-          $write_resolv_func "$resolvfile.multiwan.tmp" "$domain" "$nameservers" &&
           touch "$keepDir/../up/$iface" &&
           echo "up-flag '$iface' created"
           }
+        $write_resolv_func "$resolvfile.multiwan.tmp" "$domain" "$nameservers"
       else
         test -f "$keepDir/../up/$iface" &&
           {
@@ -88,7 +102,7 @@ keepTheRoutes()
       }
     done
   test -n "$resolvfile" &&
-  mv -f "$resolvfile.multiwan.tmp" "$resolvfile"
+    mv -f "$resolvfile.multiwan.tmp" "$resolvfile"
   }
 
 ####################################################################
