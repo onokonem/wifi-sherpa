@@ -35,29 +35,12 @@ define Package/multiwan/install
 	$(INSTALL_BIN)  ./files/etc/init.d/multiwan-routekeeper $(1)/etc/init.d/
 
 	$(INSTALL_DIR)  $(1)/etc/hotplug.d/firewall/
-	$(INSTALL_BIN)  ./files/etc/hotplug.d/firewall/50-multiwan        $(1)/etc/hotplug.d/firewall/
-	$(INSTALL_DATA) ./files/etc/hotplug.d/firewall/50-miniupnpd.patch $(1)/etc/hotplug.d/firewall/
+	$(INSTALL_BIN)  ./files/etc/hotplug.d/firewall/50-multiwan           $(1)/etc/hotplug.d/firewall/
+	$(INSTALL_BIN)  ./files/etc/hotplug.d/firewall/50-multiwan-miniupnpd $(1)/etc/hotplug.d/firewall/
 
 	$(INSTALL_DIR)  $(1)/sbin/
 	$(INSTALL_BIN)  ./files/sbin/multiwan-routing.sh     $(1)/sbin/
 	$(INSTALL_BIN)  ./files/sbin/multiwan-routekeeper.sh $(1)/sbin/
-endef
-
-define Package/multiwan/postinst
-#!/bin/sh
-
-if test -z "$${IPKG_INSTROOT}"
-  then
-  echo "This package is for image-generation-time install ONLY"
-  exit 1
-  fi
-
-test -f "$${IPKG_INSTROOT}/etc/hotplug.d/firewall/50-miniupnpd" &&
-cd "$${IPKG_INSTROOT}/etc/hotplug.d/firewall" &&
-patch < 50-miniupnpd.patch ||
-exit 2
-
-rm "$${IPKG_INSTROOT}/etc/hotplug.d/firewall/50-miniupnpd.patch"
 endef
 
 $(eval $(call BuildPackage,multiwan))
