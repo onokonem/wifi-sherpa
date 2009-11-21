@@ -36,7 +36,7 @@ define Package/multiwan/install
 
 	$(INSTALL_DIR)  $(1)/etc/hotplug.d/firewall/
 	$(INSTALL_BIN)  ./files/etc/hotplug.d/firewall/50-multiwan           $(1)/etc/hotplug.d/firewall/
-	$(INSTALL_BIN)  ./files/etc/hotplug.d/firewall/50-multiwan-miniupnpd $(1)/etc/hotplug.d/firewall/
+	$(INSTALL_BIN)  ./files/etc/hotplug.d/firewall/55-multiwan-miniupnpd $(1)/etc/hotplug.d/firewall/
 
 	$(INSTALL_DIR)  $(1)/sbin/
 	$(INSTALL_BIN)  ./files/sbin/multiwan-routing.sh     $(1)/sbin/

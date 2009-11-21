@@ -24,16 +24,24 @@ set_nat_rule()
 
 set_rules() # device address
   {
+  local device address gateway nameservers domain
   . "$keepDir/$1"
-  echo "$upnp_flt"|grep -q " $device " || set_filter_rule "$1" "$device" "$address"
-  echo "$upnp_nat"|grep -q " $device " || set_nat_rule    "$1" "$device" "$address"
+  if test -n "$device" -a -n "$address"
+    then
+    echo "$upnp_flt"|grep -q " $device " || set_filter_rule "$1" "$device" "$address"
+    echo "$upnp_nat"|grep -q " $device " || set_nat_rule    "$1" "$device" "$address"
+  else
+    echo "can not add $1 to firewall: device '$device' or address '$address' is invalid"
+    fi
   }
 
 config_check_option() # option value param
   {
   local val
   config_get val "$1" iface
-  test -f "$keepDir/$val" && set_rules "$val"
+  test -f "$keepDir/$val" &&
+  test -f "$keepDir/../up/$val" &&
+  set_rules "$val"
   }
 
 iptables -t filter -N MINIUPNPD 2>/dev/null
