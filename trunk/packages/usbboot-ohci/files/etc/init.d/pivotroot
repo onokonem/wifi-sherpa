@@ -21,11 +21,12 @@ for part in `fdisk -l |grep 'Linux$'|cut -d ' ' -f 1`
 
 test -n "$root_part" &&
   {
-  mount --move /tmp  /mnt/tmp  &&
-  mount --move /dev  /mnt/dev  &&
-  mount --move /jffs /mnt/jffs &&
-  mount --move /sys  /mnt/sys  &&
   mount --move /proc /mnt/proc &&
   pivot_root   /mnt  /mnt/mnt  &&
-  umount /mnt
+    {
+    mount --move /mnt/dev  /dev
+    mount --move /mnt/tmp  /tmp
+    mount --move /mnt/jffs /jffs
+    mount --move /mnt/sys  /sys
+    }
   }
