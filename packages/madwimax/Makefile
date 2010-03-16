@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=madwimax
 PKG_VERSION:=0.1.1
-PKG_RELEASE:=3
+PKG_RELEASE:=4
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://madwimax.googlecode.com/files/
@@ -24,7 +24,7 @@ define Package/madwimax
   CATEGORY:=FWWRT
   TITLE:=An userspace driver for devices based on Samsung CMC-730 chip
   URL:=http://code.google.com/p/madwimax/
-  DEPENDS:=+libusb1 +kmod-tun +libpthread
+  DEPENDS:=+libusb-1.0 +kmod-tun +libpthread
 endef
 
 
