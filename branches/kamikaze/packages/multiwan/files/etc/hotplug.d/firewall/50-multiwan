@@ -1,0 +1,31 @@
+#!/bin/sh -u
+
+keepDir="/tmp/multiwan/ifaces"
+
+local state="${ZONE}_${INTERFACE}"
+local active
+config_get active "$state" ifname
+
+[ -z "$active" ] &&
+  {
+  local ipaddr gateway dns dnsdomain
+  config_get ipaddr    "$INTERFACE" ipaddr
+  config_get gateway   "$INTERFACE" gateway
+  config_get dns       "$INTERFACE" dns
+  config_get dnsdomain "$INTERFACE" dnsdomain
+
+  mkdir -p "$keepDir" &&
+  cat <<EOF > "$keepDir/../$INTERFACE.tmp" &&
+device='$DEVICE'
+address='$ipaddr'
+gateway='$gateway'
+nameservers='$dns'
+domain='$dnsdomain'
+EOF
+  mv -f "$keepDir/../$INTERFACE.tmp" "$keepDir/$INTERFACE"
+
+  test -n "$gateway" &&
+  /sbin/multiwan-routing.sh "$INTERFACE" down "$ipaddr" "$gateway" "$dns"
+
+  echo "Interface '$INTERFACE' registered with dev '$DEVICE', ip '$ipaddr', gw '$gateway', ns '$dns', domain '$domain'"
+  } 2>&1 | logger -t multiwan -p daemon.notice

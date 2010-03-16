@@ -1,0 +1,29 @@
+#!/bin/sh /etc/rc.common
+
+START=95
+
+command="/usr/bin/lua"
+params="/sbin/authportal-httpd.lua"
+
+
+start() {
+  runningPid="`ps | grep "$command $params"|grep -v grep|awk '{print $1}'`"
+  test -n "$runningPid" &&
+    {
+    echo "Do not start me twice, please!" 1>&2
+    exit 1
+    }
+  
+  $command $params &
+}
+
+stop() {
+  runningPid="`ps | grep "$command $params"|grep -v grep|awk '{print $1}'`"
+  test -z "$runningPid" &&
+    {
+    echo "Is it started?!" 1>&2
+    exit 2
+    }
+  kill "$runningPid"
+  sleep 5
+}

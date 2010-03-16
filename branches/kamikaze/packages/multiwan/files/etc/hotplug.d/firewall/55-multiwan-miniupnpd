@@ -1,0 +1,55 @@
+#!/bin/sh -ux
+
+keepDir="/tmp/multiwan/ifaces"
+
+read_upnp_rules()
+  {
+  while read p1 p2 p3 p4 p5 p6 p7
+    do
+    test "$p3" == 'MINIUPNPD' && echo -n "$p6 "
+    done
+  }
+  
+set_filter_rule()
+  {
+  echo "adding $1 ($2 - $3) to firewall filter"
+  iptables -t filter -A forwarding_rule -i "$2" ! -o "$2" -j MINIUPNPD
+  }
+
+set_nat_rule()
+  {
+  echo "adding $1 ($2 - $3) to firewall nat"
+  iptables -t nat -A prerouting_rule -i "$2" -d "$3" -j MINIUPNPD
+  }
+
+set_rules() # device address
+  {
+  local device address gateway nameservers domain
+  . "$keepDir/$1"
+  if test -n "$device" -a -n "$address"
+    then
+    echo "$upnp_flt"|grep -q " $device " || set_filter_rule "$1" "$device" "$address"
+    echo "$upnp_nat"|grep -q " $device " || set_nat_rule    "$1" "$device" "$address"
+  else
+    echo "can not add $1 to firewall: device '$device' or address '$address' is invalid"
+    fi
+  }
+
+config_check_option() # option value param
+  {
+  local val
+  config_get val "$1" iface
+  test -f "$keepDir/$val" &&
+  test -f "$keepDir/../up/$val" &&
+  set_rules "$val"
+  }
+
+iptables -t filter -N MINIUPNPD 2>/dev/null
+iptables -t nat    -N MINIUPNPD 2>/dev/null
+
+upnp_flt=" `iptables -t filter -L forwarding_rule -n -v|read_upnp_rules`"
+upnp_nat=" `iptables -t nat    -L prerouting_rule -n -v|read_upnp_rules`"
+
+config_load multiwan
+
+config_foreach config_check_option upnpon 2>&1 logger -t "upnp-multiwan"

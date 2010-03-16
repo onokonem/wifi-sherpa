@@ -1,0 +1,30 @@
+#!/bin/sh /etc/rc.common
+
+START=95
+
+. /etc/fwwrt.config
+
+start() {
+  runningPid=`ps | grep 'lua /sbin/iptkeeper.lua'|grep -v grep|awk '{print $1}'`
+  test -n "$runningPid" &&
+    {
+    echo "Do not start me twice, please!" 1>&2
+    exit 1
+    }
+  
+  uci set firewall.@include[0].path='/etc/firewall.fwwrt'
+  uci commit
+  /etc/init.d/firewall restart
+
+  lua /sbin/iptkeeper.lua &
+}
+
+stop() {
+  runningPid=`ps | grep 'lua /sbin/iptkeeper.lua'|grep -v grep|awk '{print $1}'`
+  test -z "$runningPid" &&
+    {
+    echo "Is it started?!" 1>&2
+    exit 2
+    }
+  kill "$runningPid"
+}

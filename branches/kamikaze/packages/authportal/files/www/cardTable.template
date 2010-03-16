@@ -1,0 +1,8 @@
+	<table class="<%=tostring((i < env.pages) and "cards" or "lastCard")%>"> 
+	<!-- <%=tostring("pages = '"..env.pages.."' i = '"..i.."'")%> -->	
+<%!"/www/cardRows.template"%>
+<%!"/www/cardRows.template"%>
+<%!"/www/cardRows.template"%>
+<%!"/www/cardRows.template"%>
+<%!"/www/cardRows.template"%>	
+	</table>

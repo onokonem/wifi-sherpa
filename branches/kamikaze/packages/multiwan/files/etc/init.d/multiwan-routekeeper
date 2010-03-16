@@ -1,0 +1,15 @@
+#!/bin/sh /etc/rc.common
+
+START=80
+
+start()
+  {
+  /sbin/multiwan-routekeeper.sh &
+  }
+
+stop()
+  {
+  local pidfile='/var/run/multiwan-routekeeper.pid'
+  test -f "$pidfile" &&
+  kill "`cat "$pidfile"`"
+  }

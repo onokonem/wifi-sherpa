@@ -1,0 +1,8 @@
+		<tr>
+			<td>
+<%!env.dir.."/card.template"%>
+			</td>
+			<td>
+<%!env.dir.."/card.template"%>
+			</td>
+		</tr>

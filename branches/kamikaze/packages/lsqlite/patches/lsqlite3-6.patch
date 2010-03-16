@@ -1,0 +1,75 @@
+diff -ubBENdr lsqlite3-6.orig/Makefile lsqlite3-6/Makefile
+--- lsqlite3-6.orig/Makefile	2009-08-08 03:34:55.000000000 +0400
++++ lsqlite3-6/Makefile	2009-08-12 14:38:25.000000000 +0400
+@@ -1,35 +1,20 @@
+ # makefile for lsqlite3 library for Lua
+ 
+-ifneq "$(shell pkg-config --version)" ""
+-  # automagic setup (OS X fink, Linux apt-get, ..)
+-  #
+-  LUAINC= $(shell pkg-config --cflags lua)
+-  LUALIB= $(shell pkg-config --libs lua)
+-  LUAEXE= lua
+-  # Now, we actually want to _not_ push in stuff to the distro Lua CMOD directory,
+-  # way better to play within /usr/local/lib/lua/5.1/
+-  #LUACMOD= $(shell pkg-config --variable=INSTALL_CMOD lua)
+-  LUACMOD= /usr/local/lib/lua/5.1/
+-  #
+-  SQLITE3INC= $(shell pkg-config --cflags sqlite3)
+-  SQLITE3LIB= $(shell pkg-config --libs sqlite3)
+-else
+   # manual setup (change these to reflect your Lua installation)
+   #
+-  BASE= /usr/local
++  BASE= $(PREFIX)
+   LUAINC= -I$(BASE)/include
+-  LUAEXE= $(BASE)/bin/lua.exe
++  LUAEXE= $(BASE)/bin/lua
+ #  LUALIB= -L$(BASE)/lib -llua51
+ #  LUACMOD= $(BASE)/lib/lua/5.1/
+ #  Windows' LUA_CDIR and LUALIB are both the same as the Lua executable's directory...
+-  LUALIB= -L$(BASE)/bin -llua51
+-  LUACMOD= $(BASE)/bin
++  LUALIB= -L$(BASE)/lib -llua
++  LUACMOD= $(BASE)/lib/lua
+   #
+   SQLITE3INC= -I$(BASE)/include
+   SQLITE3LIB= -L$(BASE)/bin -lsqlite3
+   #
+   POD2HTML= perl -x -S doc/pod2html.pl
+-endif
+ 
+ TMP=./tmp
+ DISTDIR=./archive
+@@ -40,7 +25,7 @@
+ UNAME= $(shell uname)
+ ifeq "$(UNAME)" "Linux"
+   _SO=so
+-  SHFLAGS= -fPIC
++  SHFLAGS= -shared -fPIC
+ endif
+ ifneq "" "$(findstring BSD,$(UNAME))"
+   _SO=so
+@@ -59,8 +44,8 @@
+ endif
+ 
+ # no need to change anything below here - HAH!
+-CFLAGS= $(INCS) $(DEFS) $(WARN) -O2 $(SHFLAGS)
+-WARN= -Wall #-ansi -pedantic -Wall
++CFLAGS= $(INCS) $(DEFS) $(WARN) $(SHFLAGS) $(CFLAGS)
++WARN= -ansi -pedantic -Wall
+ INCS= $(LUAINC) $(SQLITE3INC)
+ LIBS= $(LUALIB) $(SQLITE3LIB)
+ 
+@@ -80,9 +65,10 @@
+ 	$(LUAEXE) tests-sqlite3.lua
+ 
+ $T:	$(OBJS)
+-	$(CC) $(SHFLAGS) -o $@ $(OBJS) $(LIBS)
++	$(CC) $(SHFLAGS) -o $@ $(OBJS) $(LIBS) $(CFLAGS)
+ 
+ install:
++	mkdir -p $(LUACMOD)
+ 	cp $T $(LUACMOD)
+ 
+ clean:

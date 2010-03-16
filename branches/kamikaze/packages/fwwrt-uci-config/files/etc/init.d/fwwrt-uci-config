@@ -1,0 +1,109 @@
+#!/bin/sh /etc/rc.common
+
+START=10
+
+uciFindAndRemove() {
+	name=`uci show "$1"|grep "$2"'$'|cut -d '.' -f 1,2|head -n 1`
+	while test -n "$name"
+		do
+		uci delete "$name"
+		name=`uci show "$1"|grep "$2"'$'|cut -d '.' -f 1,2|head -n 1`
+		done
+	echo
+	}
+
+start() {
+        test "`uci get fwwrt.authportal`" == "fwwrt" ||
+          {
+          uci import fwwrt <<EOF
+config 'fwwrt' 'authportal'
+    option 'logindelay'      '2'
+    option 'httpsName'       'hotspot.djarvur.net'
+    option 'shortName'       'hot.spot'
+    option 'dbType'          'sqlite2'
+    option 'dbFile'          '/usr/local/fwwrt/authportal.sqlite2'
+
+config 'fwwrt' 'ssl'
+    option 'certificate' '/etc/certs/hotspot.djarvur.net.crt'
+    option 'key'         '/etc/certs/hotspot.djarvur.net.key'
+    option 'cafile'      '/etc/certs/startssl.com.sub.class1.server.ca.pem'
+    option 'ciphers'     'ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL'
+
+config 'fwwrt' 'ports'
+    option 'unauth'    '3001'
+    option 'unauthSSL' '3002'
+    option 'unauthDNS' '3053'
+    option 'auth'      '3003'
+    option 'authSSL'   '3004'
+    option 'squid'     '3128'
+    option 'ssh'       '4778'
+
+config 'fwwrt' 'firewall'
+    option 'externalAdmin'   'YES'
+    option 'squidEnabled'    'no'
+    option 'iptables'        '/usr/sbin/iptables'
+    option 'includepath'     '/etc/firewall.fwwrt'
+    option 'fixMTU'          '1350'
+    option 'upnpEnabled'     'yes'
+    option 'dnsFakePort'     '4053'
+    option 'dnsFakeAddr'     '127.5.9.1'
+
+config 'fwwrt' 'dhcp'
+    option 'kickoffTimeout'  '5m'
+
+config 'fwwrt' 'log'
+    option 'verbose'         'false'
+
+config 'fwwrt' 'show'
+    option 'logout'      'true'
+    option 'details'     'true'
+    option 'adminlink'   'true'
+EOF
+
+		  uci commit
+
+          uci import wireless <<EOF
+config 'wifi-device' 'wl0'
+        option 'type'     'broadcom'
+        option 'channel'  '5'
+        option 'disabled' '0'
+
+config 'wifi-iface'
+        option 'device'     'wl0'
+        option 'network'    'lan'
+        option 'mode'       'ap'
+        option 'encryption' 'none'
+        option 'ssid'       '`uci get fwwrt.authportal.httpsName`'
+EOF
+
+		  uci commit
+		  }
+	
+	uci set system.@system[0].hostname="`uci get fwwrt.authportal.httpsName`"
+	
+	uci set dhcp.lan.leasetime="`uci get fwwrt.dhcp.kickoffTimeout`"
+
+	test -f "`uci get fwwrt.firewall.includepath`" &&
+	{
+	uciFindAndRemove firewall ".path=`uci get fwwrt.firewall.includepath`"
+	uci add firewall include
+	uci set firewall.@include[-1].path="`uci get fwwrt.firewall.includepath`"
+	}
+
+	uciFindAndRemove luci_hosts ".hostname=`uci get fwwrt.authportal.httpsName`"
+	uci add luci_hosts host
+	uci set luci_hosts.@host[-1].hostname="`uci get fwwrt.authportal.httpsName`"
+	uci set luci_hosts.@host[-1].ipaddr="`uci get network.lan.ipaddr`"
+
+	uciFindAndRemove luci_hosts ".hostname=`uci get fwwrt.authportal.shortName`"
+	uci add luci_hosts host
+	uci set luci_hosts.@host[-1].hostname="`uci get fwwrt.authportal.shortName`"
+	uci set luci_hosts.@host[-1].ipaddr="`uci get network.lan.ipaddr`"
+
+	uci commit
+	}
+
+stop() {
+        echo "Nothing to be done" 1>&2
+        return 0
+}

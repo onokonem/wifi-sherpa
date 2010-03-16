@@ -1,0 +1,34 @@
+#!/bin/sh /etc/rc.common
+
+START=95
+
+dnsFakePort="`    uci get fwwrt.firewall.dnsFakePort`"   || exit 1
+internalAddr="`uci get network.lan.ipaddr`"              || exit 1
+
+dnsmasqParams=" --listen-address=127.0.0.1 --no-hosts --pid-file=/tmp/fakedns.pid --no-resolv --selfmx --leasefile-ro"
+
+for iface in `ifconfig -a|grep -v '^ '|awk '{print $1}'|grep -v '\.'`
+	do
+	dnsmasqParams="$dnsmasqParams --no-dhcp-interface=$iface"
+	done
+
+start() {
+  runningPid="`ps | grep "dnsmasq --port=$dnsFakePort"|grep -v grep|awk '{print $1}'`"
+  test -n "$runningPid" &&
+    {
+    echo "Do not start me twice, please!" 1>&2
+    exit 1
+    }
+  
+  dnsmasq --port=$dnsFakePort --address="/#/$internalAddr" $dnsmasqParams
+}
+
+stop() {
+  runningPid="`ps | grep "dnsmasq --port=$dnsFakePort"|grep -v grep|awk '{print $1}'`"
+  test -z "$runningPid" &&
+    {
+    echo "Is it started?!" 1>&2
+    exit 2
+    }
+  kill "$runningPid"
+}
